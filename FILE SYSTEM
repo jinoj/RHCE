@@ -1,0 +1,22 @@
+ filesystem-refered to as the format that we put on the hard drive.the way the hard drive itself actually shows the file.
+
+Linux file system is a tree like structure,sometimes referred to as the dirctory tree
+In linux folders are refered to as directories
+In linux file system each directory has a parent.but the root directory has no parents and it is represented by a forward slash. /
+
+Root directory is the top most directory which contains files and sub-directories
+/---->root base to top or the beginning.every device in a computer reffered by a file or folder.
+/bin-binary-which contains all the executable commands used by all the user in the system
+/boot-kernel,bootloader
+/dev-devices on the computer,like keyboard, mouses.. are represented by files and folders
+/opt-optional softwares are stored here
+/root- home directory for root user
+/sbin-which contains all the executable commands used by the root user in the system
+/etc- all configuration files
+/home-users
+/lib-libraries,information about the programs used on the computer
+/tmp-temporary files stored, this will flush off at every reboot
+/media-usb and cd/dvd like external medias mounted here.
+/var-variable data,log files,backup,cache
+/mnt- temporary mountable file systems or storage devices
+/proc- memory based information like partitions.
