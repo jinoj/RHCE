@@ -1,0 +1,53 @@
+Creating user:
+useradd swamy
+passwd swamy
+cat /etc/passwd
+
+Creating Group:
+
+groupadd Tech
+gpasswd Tech
+cat /etc/group
+
+Adding user to the Group:
+usermod -G Tech swamy
+
+Setting expiry date for the user account:
+usermod --expiredate 2017-10-30 user1
+
+Adding user to the multiple group:
+usermod --append --groups root,user user1
+
+Changing default shell of the user:
+usermod --shell /bin/sh user1
+
+Checking the group which user belongs to:
+groups user1
+id user1
+Locking the user account:
+usermod -L user1
+or
+usermod --Lock user1
+
+Unlocking the user account:
+usermod --unlock user1
+
+Checking the group ownership:
+groupadd HR
+chown :HR file.txt
+usermod -G HR user1
+usermod -G HR user2
+chmod 660 file.txt
+
+Deleting group and user:
+groupdel HR
+userdel --remove user1
+or
+rm -r user1
+
+
+Creating user and group with manual user id:
+useradd -u 510 user1
+groupadd -g 1500 group1
+Removing user from the group:
+gpasswd -d swamy Tech
