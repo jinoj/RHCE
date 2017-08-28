@@ -1,0 +1,19 @@
+
+Hard link:
+-> mirror copy of the original file
+-> These links share the common inodes
+-> changes made to the original or hard linked file will reflect in other.
+-> when we delte hard link nothing will happen to the other file.
+
+* it has same inodes
+* ls -l shows all the link
+* removing link, just reduce the link count but doesnt affect other link
+* cannot create a hard link for a directory
+* even if the original file is removed, the link will show the content
+
+Soft link:
+-> is actual link to the original file
+-> these links will have different inodes
+-> Removing soft link doesn't affect anything but when the original file is removed, the link becomes a 'dangling' link that points to nonexistent file.
+-> A Soft Link can link to a directory.
+
