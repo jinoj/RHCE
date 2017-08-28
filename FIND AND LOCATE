@@ -1,0 +1,26 @@
+Find & Locate:
+
+Locate:
+locate -i message
+locate -i message | less
+locate -i *example*
+
+Find:
+cd /home/simar/Desktop
+cat > example.txt
+mkdir mms
+
+cd
+find /home -name "exaple.txt"
+find /home -name "mms"
+cd /home
+find . -type f
+find . -type d
+find . -type f -name ".*"
+find . -type d -name ".*"
+
+cd
+find /home -size +1M
+find /home -size -1M
+find /home -size 1M
+----------------------------------------------
