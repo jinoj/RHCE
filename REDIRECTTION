@@ -4,6 +4,28 @@ Redirection:
 -> Error redirection
 -> Pipe redirection
 
+
+input redirection:
+
+wc large.txt
+wc
+output redirection:
+
+ls
+dir
+input+output:
+date > command.txt
+
+error redirection:
+lss
+lss 2> error.txt
+
+input+output+error redirection:
+ls /Desktop /Doccument > myfile 2>&1
+cat myfile
+--------------------------------------------
+
+
 Input Redirection:
 wc file
 cat > file1
