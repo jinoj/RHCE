@@ -1,0 +1,90 @@
+GLUSTER FS 
+
+
+Host Name	              IP Address	  OS	       Memory      Disk	         Purpose
+gluster1.itzgeek.local	192.168.12.16	CentOS 7	1GB	/dev/sdb (5GB)	Storage Node 1
+gluster2.itzgeek.local	192.168.12.17	RHEL 7  	1GB	/dev/sdb (5GB)	Storage Node 2
+client.itzgeek.local	  192.168.12.8	Ubuntu 16.04	NA	NA	        Client Machine
+
+
+sudo vi /etc/hosts
+
+192.168.12.16  gluster1.itzgeek.local  gluster1
+192.168.12.17  gluster2.itzgeek.local  gluster2
+192.168.12.20 client.itzgeek.local client
+
+create repositery on RHEL 7
+
+vi /etc/yum.repos.d/Gluster.repo
+
+[gluster38]
+name=Gluster 3.8
+baseurl=http://mirror.centos.org/centos/7/storage/$basearch/gluster-3.8/
+gpgcheck=0
+enabled=1
+
+
+cent 7
+
+#yum install -y centos-release-gluster
+#yum install -y glusterfs-server
+#systemctl start glusterd
+#systemctl status glusterd
+#systemctl enable glusterd
+#systemctl stop firewalld
+#systemctl disable firewalld
+fdisk /dev/sdb (create partition with 83 id)
+#mkfs.ext4 /dev/sdb1
+#mkdir -p /data/gluster
+#mount /dev/sdb1 /data/gluster
+#echo "/dev/sdb1 /data/gluster ext4 defaults 0 0" | tee --append /etc/fstab
+#[root@gluster1 ~]# gluster peer probe gluster2.itzgeek.local
+#[root@gluster1 ~]# gluster peer status
+#[root@gluster1 ~]# gluster pool list
+#[root@gluster1 ~]# gluster volume create gv0 replica 2 gluster1.itzgeek.local:/data/gluster/gv0 gluster2.itzgeek.local:/data/gluster/gv0
+#[root@gluster1 ~]# gluster volume start gv0
+#[root@gluster1 ~]# gluster volume info gv0
+
+
+Setup GlusterFS Client:
+
+$ su -
+
+### CentOS / RHEL ###
+yum install -y glusterfs-client
+
+### Ubuntu / Debian ###
+apt-get install -y glusterfs-client
+
+#mkdir -p /mnt/glusterfs
+#mount -t glusterfs gluster1.itzgeek.local:/gv0 /mnt/glusterfs
+#firewall-cmd --zone=public --add-rich-rule='rule family="ipv4" source address="clientip" accept'
+#root@client:~# df -hP /mnt/glusterfs
+#root@client:~# cat /proc/mounts
+#gluster1.itzgeek.local:/gv0 /mnt/glusterfs glusterfs  defaults,_netdev 0 0 | tee --append /etc/fstab
+
+Test GlusterFS Replication and High-Availability:
+--------------------------------------------------
+
+GlusterFS Server Side:
+
+[root@gluster1 ~]# mount -t glusterfs gluster2.itzgeek.local:/gv0 /mnt
+[root@gluster2 ~]# mount -t glusterfs gluster1.itzgeek.local:/gv0 /mnt
+
+GlusterFS Client Side:
+
+touch /mnt/glusterfs/file1
+touch /mnt/glusterfs/file2
+
+power off gluster1 and also check with high availability use gluster 2
+
+[root@gluster1 ~]# poweroff
+
+root@client:~# ls -l /mnt/glusterfs/
+
+touch /mnt/glusterfs/file3
+touch /mnt/glusterfs/file4
+
+power on gluster1
+
+[root@gluster1 ~]# mount -t glusterfs gluster1.itzgeek.local:/gv0 /mnt
