@@ -51,3 +51,5 @@ WantedBy=multi-user.target
 verfy
 
 curl localhost:8080
+
+#java -jar jenkins-cli -s http://localhost:8080 help ------->command cli
