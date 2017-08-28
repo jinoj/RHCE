@@ -1,0 +1,43 @@
+
+FTP stands for File Transfer Protocol. FTP is supported by all the operating systems and browsers.
+
+It is a client-server based protocol. How FTP works 
+Step 1: Client connects to server on port 21. 
+Step 2: Server responds and ask for authentication. 
+Step 3: Client decides weather to connect passively or actively and authenticate with credentials(user name password). 
+Step 4: If it is an active connection, server opens port 20 for data transfer and gives ftp prompt after successful authentication.
+Step 5: Client call for file and server initiates file transfer. Following picture shows
+
+In this tutorial I will configure FTP Server on Redhat. FTP is the most widely used protocol for file transfer.
+
+->FTP stand for File Transfer Protocol.
+->FTP does not require to login directly into the remote host
+->FTP transfer data without encryption
+->vsftpd is the only stand-alone FTP distributed With Redhat
+->vsftpd stand for Very Secure FTP Daemon
+->vsftpd is secure, fast and stable version of FTP
+->vsftpd efficiently handle large numbers of connection securely
+
+Commands:
+
+In SERVER
+
+[root@server~]#yum install vsftpd -y
+[root@server~]#cd /var/ftp/pub/
+[root@server pub]#mkdir ftpshare
+[root@server pub]#cd ftpshare
+[root@server ftpshare]#touch impfile
+[root@server ftpshare]#cd
+[root@server~]#firewall-cmd --permanent --add-service=ftp
+[root@server~]#firewall-cmd --reload
+[root@server~]#systemctl enable vsftpd
+[root@server~]#systemctl restart vsftpd
+[root@server~]#systemctl status vsftpd
+
+In CLIENT
+Go to Web browser,
+
+In the URL TAB type:
+ftp://pub/ftpshare/
+
+------>you will see the impfile that you have created in ftpshare.
