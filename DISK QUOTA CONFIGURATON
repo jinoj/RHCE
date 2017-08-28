@@ -1,0 +1,60 @@
+Disk quota:
+Quota overview:
+->Disk quota restricts disk space for users not to consume too much.
+Quota setting terms:
+blocks= eg:1kblocks
+inodes=no.of entries in directory files
+soft=maximum number of blocks/users may have partition before warning
+hard=maximum number of blocks/user may have partition.If exceeding it will be dropped
+
+Quota Initialization:
+
+(i)Package checking:
+
+[root@localhost ~]# yum install quota
+[root@localhost ~]#tpm -qa | grep quota
+
+(ii)Enabling Quota
+[root@localhost ~]#cat /etc/fstab
+/dev/sdb5/   /home  ext4  defaults,usrquota,grpquota  1  2
+[root@localhost ~]#mount -o remount /home
+[root@localhost ~]#mount
+
+(iii) Quota Implementation
+
+To start or stop quota
+[root@localhost ~]#quotaon -avug
+-a=all,-v=verbose,-u=user,-g=group
+
+COMMANDS:
+[root@localhost ~]# yum install quota
+[root@localhost ~]#tpm -qa | grep quota
+[root@localhost ~]#cat /etc/fstab
+/dev/sdb5/   /home  ext4  defaults,usrquota,grpquota  1  2
+[root@localhost ~]#mount -o remount /home
+[root@localhost ~]#mount
+[root@localhost ~]#quotacheck -cugm /home
+[root@localhost ~]#cd /home
+[root@localhost home]#ls
+[root@localhost home]#quotaon -avug
+[root@localhost home]#useradd sakshy
+[root@localhost home]#useradd sandy
+[root@localhost home]#quota sakshy
+[root@localhost home]#edquota sakshy
+
+soft  hard
+5000  7000
+
+Another way of editing quota:
+[root@localhost home]#setquota sandy 5000 8000 0 0 /home
+[root@localhost home]#quota sandy
+[root@localhost home]#su sakshy
+[root@localhost home]$ cd
+[root@localhost ~]$quota
+dd if=/dev/zero of=/bigfile bs=1K count=2000 
+which means 2000kb exceeded with existing memory
+[root@localhost ~]$exit
+[root@localhost ~]#repquota -a
+[root@localhost ~]#edquota -p sakshy user5
+
+'user5' is an another user.. sakshy's quota setting will be copied to user5
