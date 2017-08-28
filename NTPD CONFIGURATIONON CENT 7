@@ -1,0 +1,52 @@
+
+NTP Configuration:
+	Network Time Protocol (NTP) presents an unique ability for companies to synchronize the clocks of all the
+systems within the company. Time synchronization is important for many reasons,When an organizations systems
+all maintain different clock times, it becomes very difficult from a troubleshooting standpoint to determine
+when and under what conditions a particular event might be occurring.
+
+	NTP provides an easy way to ensure that all systems will maintain the correct time which in turn can greatly
+simplify the burden on administrators/tech support. Where this guide will differ is rather than having all of
+the hosts on the network querying out to public NTP servers, one server will contact the public NTP system and
+then provide time for all hosts within the local network.
+
+Commands:
+[root@server ~]#yum install -y ntp
+
+Then go to web browser and type in the url box ----> www.pool.ntp.org/en/
+Select Asia->India-> and copy these four lines
+server 0.asia.pool.ntp.org
+server 1.asia.pool.ntp.org
+server 2.asia.pool.ntp.org
+server 3.asia.pool.ntp.org
+
+Then go to vim /etc/ntp.conf and paste there
+[root@server ~]#vim /etc/ntp.conf
+Insert
+
+#please consider joining the pool---> below this line
+
+server 0.asia.pool.ntp.org
+server 1.asia.pool.ntp.org
+server 2.asia.pool.ntp.org
+server 3.asia.pool.ntp.org
+
+and disable all redhat based default ntp servers by giving # sysmbol infront of it
+
+At the last line type this,
+logfile /var/log/ntp.log
+
+:wq!
+
+
+
+[root@server ~]#firewall-cmd --permanent --add-service=ntp
+[root@server ~]#firewall-cmd --reload
+[root@server ~]#systemctl enable ntpd
+[root@server ~]#systemctl restart ntpd
+[root@server ~]#systemctl status ntpd
+[root@server ~]#ntpq -p
+[root@server ~]#date -R
+
+In Go to Adjust date/Time->Internet time->Change setting->enable synchronize with a Internet time server-> IP:192.168.1.9-> Update now.
+Check the time and it will be synchronized with a server.
