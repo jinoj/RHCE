@@ -1,0 +1,83 @@
+SAMBA Configurations:
+	If you are either a power home user or you are in a business environment, you know the importance of machines being able to see one another. "Sharing Files  & Folders Between Linux, Mac, and Windows" which skimmed this topic, showing how simple it is to allow these different operating systems to see one another - with the help of Samba. 
+
+nmbd
+	This daemon handles all name registration and resolution requests. It is the primary vehicle involved in network browsing. It handles all UDP-based protocols. The nmbd daemon should be the first command started as part of the Samba startup process.
+
+smbd
+	This daemon handles all TCP/IP-based connection services for file- and print-based operations. It also manages local authentication. It should be started immediately following the startup of nmbd.
+
+1. Samba / NFS server [box1 (RHEL 7): 192.168.0.18], 
+2. Samba client #1 [box2 (RHEL 7): 192.168.0.20]
+3. Samba client #2 [Windows 8 machine: 192.168.0.106]
+
+Testing Setup for Samba
+SAMBA SERVER:
+
+# yum update && yum install samba samba-client samba-common
+
+Adding system users and setting up permissions and ownership
+
+# groupadd finance
+# useradd user1
+# useradd user2
+# usermod -a -G finance user1
+# usermod -a -G finance user2
+# mkdir /finance
+# chmod 0770 /finance
+# chgrp finance /finance
+
+Configuring SELinux and Firewalld
+
+# setsebool -P samba_export_all_ro=1 samba_export_all_rw=1
+# getsebool -a | grep samba_export
+# semanage fcontext -at samba_share_t "/finance(/.*)?"
+# restorecon /finance
+
+FIREWALLD:
+
+# firewall-cmd --permanent --add-service=samba
+# firewall-cmd --reload
+
+Configure Samba Share
+configuration file /etc/samba/smb.conf and add the section for our share:
+
+[finance]
+comment=Directory for collaboration of the company's finance team
+browsable=yes
+path=/finance
+public=no
+valid users=@finance
+write list=@finance
+writeable=yes
+create mask=0770
+Force create mode=0770
+force group=finance
+
+CHECK CONDITION:
+ROOT@BOX:testparm
+
+Adding Samba Users
+# smbpasswd -a user1
+# smbpasswd -a user2
+# systemctl start smb
+# systemctl enable smb
+# smbclient -L localhost -U user1
+# smbclient -L localhost -U user2
+
+SAMBA CLIENT:
+# yum update && yum install samba samba-client samba-common cifs-utils
+
+ permanently, by adding the following entry in /etc/fstab file:
+
+#mkdir /myshare
+#vim /root/pass.txt
+username=user1
+password=.
+
+#vim /etc/fstab
+add this permanent mount
+//server/finance        /myshare        cifs    credentials=/root/pass.txt,multiuser,sec=ntlmssp  0 0
+#df -h
+#smbclient //server/finance -U user2
+smb:\>mkdir fol1
