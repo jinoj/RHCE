@@ -1,0 +1,18 @@
+RPM:
+The RPM Package Manager (RPM) is an open packaging system, which runs on Red Hat Enterprise Linux as well as other Linux and UNIX systems. 
+The utility works only with packages built for processing by the rpm package. For the end user, RPM makes system updates easy. Installing, uninstalling, and upgrading RPM packages can be accomplished with short commands. RPM maintains a database of installed packages and their files.
+Does not install Dependancy packages.
+
+COMMANDS:
+Insert OS DVD to the machine
+[root@server~]#cd /media
+[root@server~]#mount /dev/cdrom /media
+[root@server~]#cd /mnt/Packages
+[root@server~]#rpm -ivh vsftpd*
+This is a command to install Packages
+[root@server~]#rpm -qa
+To check the packages which are already installed
+[root@server~]#rpm -qa|grep vsftpd
+To check whether the VSFTPD packages installed or not
+[root@server~]#rpm -e vsftpd*
+To uninstall the installed Packages.
