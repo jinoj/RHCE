@@ -1,0 +1,29 @@
+APACHE WEBSERVER CONFIGURATION:
+	Apache is a remarkable piece of application software.  It is the most widely used 
+Web Server application in the world with more than 50% share in the commercial web
+server market. Apache is the most widely used Web Server application in Unix-like
+operating systems but can be used on almost all platforms such as Windows. It is a
+modular, process-based web server application that creates a new thread with each
+simultaneous connection. It supports a number of features; many of them are 
+compiled as separate modules and extend its core functionality, and can provide
+everything from server side programming language support to authentication 
+mechanism. Virtual hosting is one such feature that allows a single Apache Web
+Server to serve a number of different websites. An Apache web server can host
+multiple websites on the SAME server. You do not need separate server machine and
+apache software for each website.
+
+COMMANDS:
+
+[root@server~]#yum install -y httpd
+[root@server~]#cd /var/www/html/
+[root@server~]#vim index.html
+
+INSERT
+<html>
+<head>
+<title>Redhat Enterprise Linux</title>
+</head>
+<body>Linux 7</body>
+</html>
+
+:wq!
