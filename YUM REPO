@@ -1,0 +1,39 @@
+YUM:
+YUM (Yellowdog Updater Modified) is an open source command-line as well as graphical based package management tool for RPM (RedHat Package Manager) based Linux systems. It allows users and system administrator to easily install, update, remove or search software packages on a systems.
+yum is the primary tool for getting, installing, deleting, querying, and managing Red Hat Enterprise Linux RPM software packages from official Red Hat software repositories, as well as other third-party repositories. yum is used in Red Hat Enterprise Linux versions 5 and later. 
+
+COMMANDS:
+Insert OS DVD to the machine
+
+[root@server~]#cd /media
+[root@server~]#mount /dev/cdrom /media
+[root@server~]#cd /media/Packages
+[root@server Packages]# rpm -ivh deltarpm*
+[root@server Packages]# rpm -ivh python-deltarpm*
+[root@server Packages]# rpm -ivh createrepo*
+[root@server Packages]# cd /
+[root@server /]# mkdir Repo
+[root@server /]# cd media
+[root@server media]# cp -rvf Packages/ RPM-GPG-Key-redhat-release /Repo
+[root@server media]# createrepo -v /Repo/Packages
+[root@server media]#cd
+[root@server~]#cd /etc/yum.repos.d/
+[root@server~]#vim /etc/yum.repos.d/basic.repo
+
+[basic]
+Name= SERVER
+baseurl=file:///Repo/Packages
+enabled=1
+gpgcheck=1
+gpgkey=file:///Repo/RPM-GPG-KEY-redhat-release
+:wq!
+
+[root@server~]#yum repo list   
+[root@server~]#yum clean all
+[root@server~]#yum install httpd*
+To install packages using yum
+[root@server~]#yum remove httpd*
+To remove packages using yum
+[root@server~]#yum info httpd*
+To check whether this package is installed or not.
+
