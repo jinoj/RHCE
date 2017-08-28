@@ -1,0 +1,37 @@
+TCP WRAPPERS:
+
+To determine if a client is allowed to connect to a service, TCP Wrappers reference the following two files, which are commonly referred to as hosts access files:
+
+/etc/hosts.allow
+/etc/hosts.deny
+
+When a TCP-wrapped service receives a client request, it performs the following steps:
+
+It references /etc/hosts.allow  The TCP-wrapped service sequentially parses the /etc/hosts.allow file and applies the first rule specified for that service. If it finds a matching rule, it allows the connection. If not, it moves on to the next step.
+
+It references /etc/hosts.deny  The TCP-wrapped service sequentially parses the /etc/hosts.deny file. If it finds a matching rule, it denies the connection. If not, it grants access to the service.
+
+The following are important points to consider when using TCP Wrappers to protect network services:
+
+Because access rules in hosts.allow are applied first, they take precedence over rules specified in hosts.deny. Therefore, if access to a service is allowed in hosts.allow, a rule denying access to that same service in hosts.deny is ignored.
+
+	The rule in each file are read from the top down and the first matching rule for a given service is the only one applied. The order of the rules is extremely important.
+
+	If no rules for the service are found in either file, or if neither file exists, access to the service is granted.
+TCP-wrapped services do not cache the rules from the hosts access files, so any changes to hosts.allow or hosts.deny take effect immediately, without restarting network services.
+
+2.6.1.1. Advantages of TCP Wrappers
+TCP Wrappers provide the following advantages over other network service control techniques:
+	Transparency to both the client and the wrapped network service  Both the connecting client and the wrapped network service are unaware that TCP Wrappers are in use. Legitimate users are logged and connected to the requested service while connections from banned clients fail.
+	centralized management of multiple protocols  TCP Wrappers operate separately from the network services they protect, allowing many server applications to share a common set of access control configuration files, making for simpler management.
+
+COMMANDS:
+[root@server~]# yum install -y tcp_wrappers
+[root@server~]#rpm -qa | grep tcp_wrappers
+[root@server~]# vi /etc/hosts.allow
+
+ALL: ALL
+sshd: ALL
+vsftpd: ALL
+[root@server~]# vi /etc/host.deny
+sshd: 192.168.1.5
