@@ -1,0 +1,16 @@
+ROOT PASSWORD BREAKING:
+[root@server ~]#reboot
+Reboot the system
+While rebooting press any key to interfere it
+The select the kernel and press 'e', to edit
+Go to the line starts with linux, at the end of the line type,
+rd.break selinux=0
+press ctrl+x
+[root@server ~]#mount  -o remount,rw /sysroot
+Initially the sysroot directory is mounted ina way with a permission of read alone, change it into read/write and remount it
+[root@server ~]#chroot /sysroot/
+passwd
+New password:
+Retype:
+[root@server ~]#exit
+[root@server ~]#exit
