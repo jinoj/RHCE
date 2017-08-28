@@ -1,0 +1,502 @@
+LDAP CONFIGURATION
+
+                domain:server.com
+
+
+[root@cent ~]# hostname 
+server
+
+[root@cent ~]# vim /etc/hosts
+192.168.43.4 www.server.com server.com server
+
+[root@cent ~]# yum install *openldap* migrationtools -y
+
+[root@cent ~]# slappasswd 
+New password: 
+Re-enter new password: 
+{SSHA}wd+yWx1z0JVFifnRCKRYCUysJ23Qy3X5
+
+[root@cent ~]# cd Desktop/
+[root@cent Desktop]# cat > ldappass   -----------> save the encrypt password
+{SSHA}wd+yWx1z0JVFifnRCKRYCUysJ23Qy3X5
+[root@cent Desktop]# cat ldappass 
+{SSHA}wd+yWx1z0JVFifnRCKRYCUysJ23Qy3X5
+
+
+
+[root@cent Desktop]# cd  /etc/openldap/slapd.d/cn=config
+[root@cent cn=config]# ls -l
+total 20
+drwxr-x---. 2 ldap ldap  29 Aug  3 23:59 cn=schema
+-rw-------. 1 ldap ldap 378 Aug  3 23:59 cn=schema.ldif
+-rw-------. 1 ldap ldap 513 Aug  3 23:59 olcDatabase={0}config.ldif
+-rw-------. 1 ldap ldap 443 Aug  3 23:59 olcDatabase={-1}frontend.ldif
+-rw-------. 1 ldap ldap 562 Aug  3 23:59 olcDatabase={1}monitor.ldif  ----------->edit
+-rw-------. 1 ldap ldap 609 Aug  3 23:59 olcDatabase={2}hdb.ldif      ----------->edit
+[root@cent cn=config]# vim olcDatabase={2}hdb.ldif
+
+# AUTO-GENERATED FILE - DO NOT EDIT!! Use ldapmodify.
+# CRC32 3bb69046
+dn: olcDatabase={2}hdb
+objectClass: olcDatabaseConfig
+objectClass: olcHdbConfig
+olcDatabase: {2}hdb
+olcDbDirectory: /var/lib/ldap
+#olcSuffix: dc=my-domain,dc=com
+olcSuffix: dc=server,dc=com   -------------------------> edit this line 
+#olcRootDN: cn=Manager,dc=my-domain,dc=com
+olcRootDN: cn=Manager,dc=server,dc=com  -------------------------> edit this line
+olcDbIndex: objectClass eq,pres
+olcDbIndex: ou,cn,mail,surname,givenname eq,pres,sub
+structuralObjectClass: olcHdbConfig
+entryUUID: 6b5677fe-0cc5-1037-8831-57b1781027ab
+creatorsName: cn=config
+createTimestamp: 20170803182924Z
+entryCSN: 20170803182924.300556Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20170803182924Z
+olcRootPW: {SSHA}wd+yWx1z0JVFifnRCKRYCUysJ23Qy3X5 ----------------------------> add this line
+olcTLSCertificateFile: /etc/pki/tls/certs/server.pem -------------------------> add this line
+olcTLSCertificateKeyFile: /etc/pki/tls/certs/serverkey.pem ---------------> add this line
+
+[root@cent cn=config]# ls -l
+total 20
+drwxr-x---. 2 ldap ldap  29 Aug  3 23:59 cn=schema
+-rw-------. 1 ldap ldap 378 Aug  3 23:59 cn=schema.ldif
+-rw-------. 1 ldap ldap 513 Aug  3 23:59 olcDatabase={0}config.ldif
+-rw-------. 1 ldap ldap 443 Aug  3 23:59 olcDatabase={-1}frontend.ldif
+-rw-------. 1 ldap ldap 562 Aug  3 23:59 olcDatabase={1}monitor.ldif
+-rw-------. 1 ldap ldap 840 Aug  4 00:09 olcDatabase={2}hdb.ldif
+[root@cent cn=config]# vim olcDatabase={1}monitor.ldif
+
+# AUTO-GENERATED FILE - DO NOT EDIT!! Use ldapmodify.
+# CRC32 ecc842eb
+dn: olcDatabase={1}monitor
+objectClass: olcDatabaseConfig
+olcDatabase: {1}monitor
+olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=extern
+ al,cn=auth" read by dn.base="cn=Manager,dc=server,dc=com" read by * none  ---->edit this line
+structuralObjectClass: olcDatabaseConfig
+entryUUID: 6b566c32-0cc5-1037-8830-57b1781027ab
+creatorsName: cn=config
+createTimestamp: 20170803182924Z
+entryCSN: 20170803182924.300253Z#000000#000#000000
+modifiersName: cn=config
+modifyTimestamp: 20170803182924Z
+
+[root@cent cn=config]# slaptest -u
+59836e81 ldif_read_file: checksum error on "/etc/openldap/slapd.d/cn=config/olcDatabase={1}monitor.ldif"
+59836e81 ldif_read_file: checksum error on "/etc/openldap/slapd.d/cn=config/olcDatabase={2}hdb.ldif"
+config file testing succeeded
+[root@cent cn=config]# systemctl restart slapd
+[root@cent cn=config]# systemctl enable slapd
+Created symlink from /etc/systemd/system/multi-user.target.wants/slapd.service to /usr/lib/systemd/system/slapd.service.
+[root@cent cn=config]# systemctl status slapd
+
+[root@cent cn=config]# cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+[root@cent cn=config]# chown -R ldap:ldap /var/lib/ldap/
+[root@cent cn=config]# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif 
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=cosine,cn=schema,cn=config"
+
+[root@cent cn=config]# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif 
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=nis,cn=schema,cn=config"
+
+[root@cent cn=config]# ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif 
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=inetorgperson,cn=schema,cn=config"
+
+[root@cent cn=config]# yum install openssl  ------------> certificate creation 
+Loaded plugins: fastestmirror, langpacks
+Loading mirror speeds from cached hostfile
+ * base: ftp.jaist.ac.jp
+ * extras: ftp.jaist.ac.jp
+ * updates: ftp.jaist.ac.jp
+Package 1:openssl-1.0.1e-60.el7_3.1.x86_64 already installed and latest version
+Nothing to do
+
+[root@cent cn=config]# openssl req -new -x509 -nodes -out /etc/pki/tls/certs/server.pem -keyout /etc/pki/tls/certs/serverkey.pem -days 365
+Generating a 2048 bit RSA private key
+.....+++
+...................................................................................................................+++
+writing new private key to '/etc/pki/tls/certs/serverkey.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:JJ
+State or Province Name (full name) []:JJ
+Locality Name (eg, city) [Default City]:JJ
+Organization Name (eg, company) [Default Company Ltd]:JJ
+Organizational Unit Name (eg, section) []:JJ
+Common Name (eg, your name or your server's hostname) []:server
+Email Address []:AJ
+
+[root@cent cn=config]# ls -l /etc/pki/tls/certs
+total 20
+lrwxrwxrwx. 1 root root   49 Aug  3 21:17 ca-bundle.crt -> /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+lrwxrwxrwx. 1 root root   55 Aug  3 21:17 ca-bundle.trust.crt -> /etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt
+-rwxr-xr-x. 1 root root  610 Feb 20 20:11 make-dummy-cert
+-rw-r--r--. 1 root root 2388 Feb 20 20:11 Makefile
+-rwxr-xr-x. 1 root root  829 Feb 20 20:11 renew-dummy-cert
+-rw-r--r--. 1 root root 1708 Aug  4 00:20 serverkey.pem  ------->create by 
+-rw-r--r--. 1 root root 1302 Aug  4 00:20 server.pem     ------->create by
+
+[root@cent cn=config]# cd /usr/share/migrationtools/
+[root@cent migrationtools]# ls -l
+total 128
+-rwxr-xr-x. 1 root root  2652 Jun 10  2014 migrate_aliases.pl
+-rwxr-xr-x. 1 root root  2950 Jun 10  2014 migrate_all_netinfo_offline.sh
+-rwxr-xr-x. 1 root root  2946 Jun 10  2014 migrate_all_netinfo_online.sh
+-rwxr-xr-x. 1 root root  3011 Jun 10  2014 migrate_all_nis_offline.sh
+-rwxr-xr-x. 1 root root  3006 Jun 10  2014 migrate_all_nis_online.sh
+-rwxr-xr-x. 1 root root  3164 Jun 10  2014 migrate_all_nisplus_offline.sh
+-rwxr-xr-x. 1 root root  3146 Jun 10  2014 migrate_all_nisplus_online.sh
+-rwxr-xr-x. 1 root root  5267 Jun 10  2014 migrate_all_offline.sh
+-rwxr-xr-x. 1 root root  7468 Jun 10  2014 migrate_all_online.sh
+-rwxr-xr-x. 1 root root  3278 Jun 10  2014 migrate_automount.pl
+-rwxr-xr-x. 1 root root  2608 Jun 10  2014 migrate_base.pl
+-rw-r--r--. 1 root root  8880 Jun 10  2014 migrate_common.ph -------------edit this content
+-rwxr-xr-x. 1 root root  2952 Jun 10  2014 migrate_fstab.pl
+-rwxr-xr-x. 1 root root  2714 Jun 10  2014 migrate_group.pl
+-rwxr-xr-x. 1 root root  3087 Jun 10  2014 migrate_hosts.pl
+-rwxr-xr-x. 1 root root  2856 Jun 10  2014 migrate_netgroup_byhost.pl
+-rwxr-xr-x. 1 root root  2856 Jun 10  2014 migrate_netgroup_byuser.pl
+-rwxr-xr-x. 1 root root  3879 Jun 10  2014 migrate_netgroup.pl
+-rwxr-xr-x. 1 root root  2840 Jun 10  2014 migrate_networks.pl
+-rwxr-xr-x. 1 root root  5635 Jun 10  2014 migrate_passwd.pl
+-rwxr-xr-x. 1 root root  2428 Jun 10  2014 migrate_profile.pl
+-rwxr-xr-x. 1 root root  2873 Jun 10  2014 migrate_protocols.pl
+-rwxr-xr-x. 1 root root  2854 Jun 10  2014 migrate_rpc.pl
+-rwxr-xr-x. 1 root root 11465 Jun 10  2014 migrate_services.pl
+-rwxr-xr-x. 1 root root  3419 Jun 10  2014 migrate_slapd_conf.pl
+
+[root@cent migrationtools]# vim migrate_common.ph
+
+
+    $DEFAULT_MAIL_DOMAIN = "domainname.com"; --------71th line change server,com
+
+    $DEFAULT_BASE = "dc=domainname.com"; --------74th line change server,com
+
+    $EXTENDED_SCHEMA = 1;  ------------- 90th line 0 replace 1
+
+
+[root@cent migrationtools]# touch /root/base.ldif
+[root@cent migrationtools]# vim /root/base.ldif
+
+dn: dc=server,dc=com
+objectClass: top
+objectClass: dcObject
+objectclass: organization
+o: server com
+dc: server
+
+dn: cn=Manager,dc=server,dc=com
+objectClass: organizationalRole
+cn: Manager
+description: Directory Manager
+                                    
+dn: ou=People,dc=server,dc=com
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group,dc=server,dc=com
+objectClass: organizationalUnit
+ou: Group
+~             
+
+[root@cent migrationtools]# useradd ldapuser1
+[root@cent migrationtools]# useradd ldapuser2
+
+[root@cent migrationtools]# passwd ldapuser1
+Changing password for user ldapuser1.
+New password: 
+BAD PASSWORD: The password contains the user name in some form
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+
+[root@cent migrationtools]# passwd ldapuser2
+Changing password for user ldapuser2.
+New password: 
+BAD PASSWORD: The password contains the user name in some form
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+
+[root@cent migrationtools]# tail /etc/passwd
+avahi:x:70:70:Avahi mDNS/DNS-SD Stack:/var/run/avahi-daemon:/sbin/nologin
+postfix:x:89:89::/var/spool/postfix:/sbin/nologin
+ntp:x:38:38::/etc/ntp:/sbin/nologin
+tcpdump:x:72:72::/:/sbin/nologin
+aj:x:1000:1000:aj:/home/aj:/bin/bash
+sambauser1:x:1001:1002::/home/sambauser1:/bin/bash
+sambauser2:x:1002:1003::/home/sambauser2:/bin/bash
+ldap:x:55:55:OpenLDAP server:/var/lib/ldap:/sbin/nologin
+ldapuser1:x:1003:1004::/home/ldapuser1:/bin/bash     --------------copy this line
+ldapuser2:x:1004:1005::/home/ldapuser2:/bin/bash     --------------copy this line
+
+[root@cent migrationtools]# vim /root/passwd
+
+ldapuser1:x:1003:1004::/home/ldapuser1:/bin/bash     --------------paste here
+ldapuser2:x:1004:1005::/home/ldapuser2:/bin/bash
+
+
+[root@cent migrationtools]# tail /etc/group
+stapsys:x:157:
+stapdev:x:158:
+tcpdump:x:72:
+aj:x:1000:aj
+sambagroup:x:1001:sambauser1,sambauser2
+sambauser1:x:1002:
+sambauser2:x:1003:
+ldap:x:55:
+ldapuser1:x:1004: --------------copy this line
+ldapuser2:x:1005: --------------copy this line
+
+[root@cent migrationtools]# vim /root/group
+
+ldapuser1:x:1004: --------------paste here
+ldapuser2:x:1005: --------------paste here
+
+
+[root@cent migrationtools]# ./migrate_passwd.pl /root/passwd /root/users.ldif
+[root@cent migrationtools]# ./migrate_group.pl /root/group /root/groups.ldif
+[root@cent migrationtools]# ls -l /root/
+total 28
+-rw-------. 1 root root 1676 Aug  3 15:07 anaconda-ks.cfg
+-rw-r--r--. 1 root root  373 Aug  4 00:31 base.ldif
+drwxr-xr-x. 4 root root   98 Aug  4 00:00 Desktop
+drwxr-xr-x. 2 root root    6 Aug  3 15:10 Documents
+drwxr-xr-x. 2 root root    6 Aug  3 20:52 Downloads
+-rw-r--r--. 1 root root   37 Aug  4 00:35 group
+-rw-r--r--. 1 root root  369 Aug  4 00:36 groups.ldif   ---------->created by above
+-rw-r--r--. 1 root root 1686 Aug  3 15:10 initial-setup-ks.cfg
+drwxr-xr-x. 2 root root    6 Aug  3 15:10 Music
+-rw-r--r--. 1 root root   99 Aug  4 00:34 passwd
+drwxr-xr-x. 2 root root    6 Aug  3 15:10 Pictures
+drwxr-xr-x. 2 root root    6 Aug  3 15:10 Public
+drwxr-xr-x. 2 root root    6 Aug  3 15:10 Templates
+-rw-r--r--. 1 root root 1086 Aug  4 00:36 users.ldif   ---------->created by above
+drwxr-xr-x. 2 root root    6 Aug  3 15:10 Videos
+
+[root@cent migrationtools]# ldapadd -x -W -D "cn=Manager,dc=server,dc=com" -f /root/base.ldif
+
+Enter LDAP Password: 
+adding new entry "dc=server,dc=com"
+adding new entry "cn=Manager,dc=server,dc=com"
+adding new entry "ou=People,dc=server,dc=com"
+adding new entry "ou=Group,dc=server,dc=com"
+
+[root@cent migrationtools]# ldapadd -x -W -D "cn=Manager,dc=server,dc=com" -f /root/users.ldif
+
+Enter LDAP Password: 
+adding new entry "uid=ldapuser1,ou=People,dc=server,dc=com"
+adding new entry "uid=ldapuser2,ou=People,dc=server,dc=com"
+
+[root@cent migrationtools]# ldapadd -x -W -D "cn=Manager,dc=server,dc=com" -f /root/groups.ldif
+
+Enter LDAP Password: 
+adding new entry "cn=ldapuser1,ou=Group,dc=server,dc=com"
+adding new entry "cn=ldapuser2,ou=Group,dc=server,dc=com"
+adding new entry "cn=,ou=Group,dc=server,dc=com"
+
+[root@cent migrationtools]#  ldapsearch -x cn=ldapuser1 -b dc=server,dc=com
+# extended LDIF
+#
+# LDAPv3
+# base <dc=server,dc=com> with scope subtree
+# filter: cn=ldapuser1
+# requesting: ALL
+#
+
+# ldapuser1, People, server.com
+dn: uid=ldapuser1,ou=People,dc=server,dc=com
+uid: ldapuser1
+cn: ldapuser1
+sn: ldapuser1
+mail: ldapuser1@server.com
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword:: e2NyeXB0fSQ2JHJtTTVKcUNnJExiUk1Hbk54VDNrOW4ubFRWTHNYTHEucGtOaDZ
+ lV0kyVy5EeHhlR1l2SlZWR3FSQnRUb3lBMTNTVDNjd2JmT1A1T0tSQW1rbFBRSDAvRmJwY0E2b1gu
+shadowLastChange: 17381
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1003
+gidNumber: 1004
+homeDirectory: /home/ldapuser1
+
+# ldapuser1, Group, server.com
+dn: cn=ldapuser1,ou=Group,dc=server,dc=com
+objectClass: posixGroup
+objectClass: top
+cn: ldapuser1
+userPassword:: e2NyeXB0fXg=
+gidNumber: 1004
+
+# search result
+search: 2
+result: 0 Success
+
+# numResponses: 3
+# numEntries: 2
+
+
+[root@cent migrationtools]#  ldapsearch -x cn=ldapuser2 -b dc=server,dc=com
+# extended LDIF
+#
+# LDAPv3
+# base <dc=server,dc=com> with scope subtree
+# filter: cn=ldapuser2
+# requesting: ALL
+#
+
+# ldapuser2, People, server.com
+dn: uid=ldapuser2,ou=People,dc=server,dc=com
+uid: ldapuser2
+cn: ldapuser2
+sn: ldapuser2
+mail: ldapuser2@server.com
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword:: e2NyeXB0fSQ2JE51eE1aU3JXJFhSaXYvUnFSdUhFOS91OUxTTW9Pck9ndXJlcHV
+ DdXlacEl2UGR2NEQ5ZkZSdDlYcjVCdWhyTjEydms1dVlGdFNUT01yenM2Ukp2cmZFWkkxZG1vMlku
+shadowLastChange: 17381
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1004
+gidNumber: 1005
+homeDirectory: /home/ldapuser2
+
+# ldapuser2, Group, server.com
+dn: cn=ldapuser2,ou=Group,dc=server,dc=com
+objectClass: posixGroup
+objectClass: top
+cn: ldapuser2
+userPassword:: e2NyeXB0fXg=
+gidNumber: 1005
+
+# search result
+search: 2
+result: 0 Success
+
+# numResponses: 3
+# numEntries: 2
+
+
+[root@cent migrationtools]# systemctl stop firewalld
+[root@cent migrationtools]# systemctl start firewalld.service 
+[root@cent migrationtools]# systemctl enable firewalld.service 
+[root@cent migrationtools]# firewall-cmd --add-service=ldap --permanent 
+success
+[root@cent migrationtools]# firewall-cmd --reload 
+success
+
+[root@cent migrationtools]# yum install nfs*
+[root@cent migrationtools]# yum install rpcbind
+
+[root@cent migrationtools]# vim /etc/exports
+/home *(rw,sync)    -----------------------------------> add this line
+
+[root@cent migrationtools]# systemctl start rpcbind
+[root@cent migrationtools]# systemctl start nfs
+[root@cent migrationtools]# systemctl start nfs-server
+[root@cent migrationtools]# systemctl enable nfs-server
+Created symlink from /etc/systemd/system/multi-user.target.wants/nfs-server.service to /usr/lib/systemd/system/nfs-server.service.
+[root@cent migrationtools]# systemctl enable nfs
+[root@cent migrationtools]# systemctl enable rpcbind
+
+[root@linux1 ~]# showmount -e
+
+Export list for server.com:/home * ---------> display this content
+
+
+client configuration:
+---------------------
+
+[root@linux2 ~]# yum install -y openldap-clients nss-pam-ldapd
+
+[root@linux2 ~]# authconfig-tui
+
+1. Put '*' Mark on "Use LDAP"
+2. Put '*' Mark on "Use LDAP Authentication"
+3. Select "Next" and Enter.
+4. Enter the server field as "ldap://linux1.learnitguide.net/"
+5. Enter the Base DN Field as "dc=learnitguide,dc=net"
+6. Select "OK" and Enter
+
+
+[root@linux2 ~]# getent passwd ldapuser1   
+ldapuser1:x:1000:1000:ldapuser1:/home/ldapuser1:/bin/bash  ---------> display this
+
+[root@linux2 ~]#yum install autofs
+
+[root@linux2 ~]#vim /etc/auto.master
+/home /etc/auto.misc  -------------------> 8thline  add this 
+
+[root@linux2 ~]#vim /etc/auto.misc
+
+* -fstype=nfs,rw,nosuid,soft  server.server.com:/home/&  -----> 6th line to add
+
+[root@linux2 ~]# systemctl enable autofs
+[root@linux2 ~]# systemctl start autofs
+
+[root@linux2 ~]# su - ldapuser1
+
+---------------verify---------------
+
+[root@linux2 ~]# su - ldapuser2
+
+---------------verify---------------
+
+ubuntu client use ldap user:
+------------------------------
+
+$ sudo apt-get update
+$ sudo apt-get -y install libnss-ldap libpam-ldap ldap-utils nscd
+
+ask some questions 
+
+$ sudo vi /etc/nsswitch.conf
+
+Update the below lines shown like below.
+
+passwd:         compat ldap
+group:          compat ldap
+shadow:         compat ldap
+
+$ sudo vi /etc/pam.d/common-session
+
+Add below line in the above file.
+
+session required        pam_mkhomedir.so skel=/etc/skel umask=077
+
+$ sudo service nscd restart
+
+$ getent passwd ldapuser
+
+ldapuser:x:9999:100:Test LdapUser:/home/ldapuser:/bin/bash
+
+
