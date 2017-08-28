@@ -1,0 +1,53 @@
+JENKINS CONFIGURATION
+========================================================================================================================================
+#yum install java-1.7.0-openjdk.x86_64
+#     wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+#rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+#yum install jenkins
+#systemctl start jenkins
+#systemctl enable jenkins
+#systemctl status jenkins
+
+if incase chage port number
+
+vim /etc/sysconfig/jenkins
+PORT_NUMBER="8080" ----------> change for customice
+
+curl localhost:8080
+
+jenkins install from war file
+==============================
+
+download from jenkins website jenkins.war file
+
+#wget http://mirrors.jenkins-ci.org/war/latest/jenkins.war
+#java -jar jenkins.war -----------> temprovary open
+#java -jar jenkins.war --httpPort=8080
+
+permanently start with jenkins
+
+# cp jenkins.war /usr/local/bin/jenkins.war
+# cd /etc/systemd/system
+#vim jenkins.service
+
+[Unit]
+Description=Jenkins Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/java -jar /usr/local/bin/jenkins.war
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+
+#systemctl daemon-reload
+#systemctl start jenkins.service
+#systemctl enable jenkins.service
+#systemctl status jenkins.service
+
+verfy
+
+curl localhost:8080
