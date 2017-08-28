@@ -1,0 +1,7 @@
+
+Changing the file attributes:
+chattr +i file1
+chattr -i file1
+lsattr
+chattr +a file1
+chattr -a file1
