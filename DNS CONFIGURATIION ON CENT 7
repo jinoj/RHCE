@@ -1,0 +1,108 @@
+1. DNS CONFIGURATION:
+
+A DNS server, or name server, is used to resolve an IP address to a hostname or vice versa.
+You can set up four different types of DNS servers:
+
+A Primary DNS server for your domain(s), which stores authoritative records for your domain.
+A secondary DNS server, which relies on a master DNS server for data.
+server.redhat.net is called a fully qualified domain name (FQDN).
+The DNS information for each zone being maintained by  authoritative name server.
+The authoritative server that contains the master zone file, which can be modified to update DNS information about the zone, is called the primary master server.
+
+The additional name servers for the zone are called secondary servers or slave servers. Secondary servers retrieve information about the zone through a zone transfer from the master server or from another secondary server. DNS information about a zone is never modified directly on the secondary server.
+
+Commands:
+
+In Server,
+ASSIGN THE IP BEFORE GOING TO THE COMMAND ( DHCP/MANUAL )
+
+Change the hostname:
+[root@hostname]#hostnamectl set-hostname server.wipro.com
+To check:
+[root@hostname]#hostnamectl 
+To update:
+[root@hostname]#vim /etc/hosts
+
+Insert
+192.168.1.9 server.wipro.com server
+:wq!
+
+[root@hostname]#ssh server
+[root@server]#
+
+DNS Package installation:
+[root@server]#yum -y install bind*
+[root@server]#vim /etc/named.conf
+INSERT
+options{
+                listen-on port 53 { any; };
+                 ......
+                 ......
+                 .......
+                  allow-query    { any; };
+		/*
+Note: at the last line also type
+
+zone "wipro.com" IN {
+	type master;
+	file "wipro.com.forward";
+};
+
+zone "1.168.192.in-addr.arpa" IN {
+	type master;
+	file "wipro.com.reverse";
+};
+
+:wq!
+
+[root@server]#named-checkconf           ---------------> To check whether there is any mis configuration in that config file
+[root@server]#cd /var/named
+[root@server named]# ll                            ----------------> long list..You will find named.localhost and named.loopback
+[root@server named]#cp -rf named.localhost wipro.com.forward
+[root@server named]#cp -rf named.loopback wipro.com.reverse
+[root@server named]#chown root:named wipro.com.*  
+[root@server named]#vim wipro.com.forward
+
+INSERT
+$TTL  1D
+@	IN SOA   @  root.wipro.com. (
+
+			              )
+
+                      NS         @
+
+              A            192.168.1.9
+server        A             192.168.1.9
+
+:wq!
+
+[root@server named]#vi wipro.com.reverse
+INSERT
+$TTL  1D
+@	IN SOA   @  root.wipro.com. (
+
+			              )
+
+                      NS         @
+	A            192.168.1.9
+	PTR        localhost.
+9                   PTR        server
+10                 PTR        CLIENT
+
+[root@server named]#firewall-cmd --permanent --add-service=dns
+[root@server named]#firewall-cmd --reload
+[root@server named]#systemctl restart named
+[root@server named]#systemctl enable named
+[root@server named]#systemctl status named
+
+To check the output:
+[root@server named]#nslookup server
+[root@server named]#nslookup client
+
+In CLIENT,
+[root@client]#firewall-cmd --permanent --add-service=dns
+[root@client]#firewall-cmd --reload
+[root@client]#systemctl restart named
+[root@client]#systemctl enable named
+[root@client]#nslookup server
+[root@client]#nslookup client
