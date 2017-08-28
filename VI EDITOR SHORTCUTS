@@ -1,0 +1,26 @@
+
+Visual Instrument:
+vi file1
+Insert mode= to write
+Esc mode=to quit
+:wq!----->write and quit
+:q!------>quit
+
+copy=yy-->yanking
+paste=pp
+cut=cc
+delete=dd
+undo=u
+j=move cursor one line down
+k=move cursor one line up
+h=move cursor one character left
+l=move cursor one character right
+o=move cursor start of the current line
+
+:0=move cursor last line in the file
+:$=move cursor first line in the file
+:5=move cursor 5th line in the file
+
+ctrl+f=move forward one screen
+ctrl+b=move backward one screen
+ctrl+d=move down one half screen
