@@ -1,0 +1,41 @@
+NFS Configuration:
+	NFS, or Network File System, is a server-client protocol for sharing files between computers on a common network. NFS enables you to mount a file system on a remote computer as if it were local to your own system. You can then directly access any of the files on that remote file system. The server and client do not have to use the same operating system. The client system just needs to be running an NFS client compatible with the NFS server.
+	For example NFS server could be a Linux system and Unix could be a client. But it cant be a window system because window is not NFS compatible. The NFS server exports one or more directories to the client systems, and the client systems mount one or more of the shared directories to local directories called mount points. After the share is mounted, all I/O operations are written back to the server, and all clients notice the change as if it occurred on the local filesystem
+
+Commands:
+In SERVER
+[root@server ~]#yum install -y nfs-utils*
+[root@server ~]#cd /home
+[root@server ~]#mkdir nfsshare
+[root@server ~]#vim /etc/idmapd.conf
+
+INSERT
+Domain=server.redhat.net
+:wq!
+
+[root@server ~]#vim /etc/exports
+/home/nfsshare /   *(rw,no_root_squash)
+[root@server ~]#systemctl restart rpcbind.service nfs-server.service
+[root@server ~]#exportfs
+
+In CLIENT
+[root@server ~]#systemctl restart rpcbind.service nfs-server.service
+[root@server ~]#vim /etc/idmapd.conf
+INSERT
+Domain=server.redhat.net
+:wq!
+
+[root@server ~]#systemctl restart rpcbind.service nfs-server.service
+[root@server ~]#mount -t nfs 192.168.1.9:/home/nfsdir/ /mnt/
+[root@server ~]#df -h
+[root@server ~]#vim /etc/fstab
+INSERT
+192.168.1.9:/home/nfsdir/  /mnt/  nfs  defaults  0  0
+:wq!
+
+[root@server ~]#mount -a
+Result: We can share the files in the created file system.
+
+Note:Remote Procedure Call (RPC) is a protocol that one program can use to request a service from a program located in another computer on a network without having to understand the network's details. 
+
+	When rpcbind is started, it checks that certain name-to-address translation-calls function correctly. If they fail, the network configuration databases may be corrupt. Since RPC services cannot function correctly in this situation, rpcbind reports the condition and terminates.
