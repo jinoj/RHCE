@@ -1,0 +1,122 @@
+configure YUM Repositoonfigure YUM Repository for Network Installation 
+
+Mount the DVD on the /cdrom
+#mkdir jinorepo
+#mount /dev/cdrom /jinorepo
+
+FTP:
+copy the packages from the DVD to FTP folder.
+#cp /jinorepo/Packages/* /var/ftp
+
+Apache:
+
+copy the packages from the DVD to apache home directory.
+#cp /jinorepo/Packages/* /var/www/html/
+
+Edit Apache configuration file to enable the indexes.
+
+#vi /etc/httpd/conf/httpd.conf
+edit 144th line From
+Options Indexes FollowSymLinks To Options All Indexes FollowSymLinks
+
+Remove the welcome page.
+#rm -rf /etc/httpd/conf.d/welcome.conf
+
+Verify the above using the web browser by visiting 
+ftp://ip-address  
+http://ip-address.
+
+Creating Repository:
+	After hosting the packages, we need to create the repository of the packages that you have download from internet or copied from the disc. CreateRepo is the tool that help you to create the XML based rpm meta structure repository, It is like an index file that point to the rpm files. This XML files used for resolving the dependency packages which is required by main package.Install CreateRepo package.
+
+#rpm -Uvh deltarpm-**.el6.x86_64.rpm python-deltarpm-**.el6.x86_64.rpm createrepo-**.rpm
+
+FTP:
+#createrepo /var/ftp
+
+Apache:
+#createrepo /var/www/html
+
+Configure Repository:
+Once created the repository, just go on to the client machine and add the repository file under the /etc/yum.repos.d directory. Change ipadress to your server ip address..
+
+#vi /etc/yum.repos.d/remote.repo
+FTP:
+[remote]
+name=RHEL FTP
+baseurl=ftp://192.168.0.151
+enabled=1
+gpgcheck=0
+
+Appache:
+[remote]
+name=RHEL Apache
+baseurl=http://192.168.0.151
+enabled=1
+gpgcheck=0
+
+Install Packages:
+	Install the packages using the yum command. Once the command issued, it downloads meta file from the server and look for the dependent rpm if required; otherwise it will install package automatically.
+
+#yum install mysql-server
+ 
+Loaded plugins: product-id, refresh-packagekit, security, subscription-manager
+Updating certificate-based repositories.
+Unable to read consumer identity
+remote                                                   | 1.3 kB     00:00
+remote/primary                                           | 1.7 MB     00:00
+remote                                                                3653/3653
+Setting up Install Process
+Resolving Dependencies
+–> Running transaction check
+—> Package mysql-server.x86_64 0:5.1.61-4.el6 will be installed
+–> Processing Dependency: mysql = 5.1.61-4.el6 for package: mysql-server-5.1.61-4.el6.x86_64
+–> Processing Dependency: perl-DBD-MySQL for package: mysql-server-5.1.61-4.el6.x86_64
+–> Running transaction check
+—> Package mysql.x86_64 0:5.1.61-4.el6 will be installed
+—> Package perl-DBD-MySQL.x86_64 0:4.013-3.el6 will be installed
+–> Finished Dependency Resolution
+ 
+Dependencies Resolved
+ 
+================================================================================
+ Package               Arch          Version                Repository     Size
+================================================================================
+Installing:
+ mysql-server          x86_64        5.1.61-4.el6           remote        8.6 M
+Installing for dependencies:
+ mysql                 x86_64        5.1.61-4.el6           remote        882 k
+ perl-DBD-MySQL        x86_64        4.013-3.el6            remote        134 k
+ 
+Transaction Summary
+================================================================================
+Install       3 Package(s)
+ 
+Total download size: 9.6 M
+Installed size: 27 M
+Is this ok [y/N]: y
+Downloading Packages:
+(1/3): mysql-5.1.61-4.el6.x86_64.rpm                     | 882 kB     00:00
+(2/3): mysql-server-5.1.61-4.el6.x86_64.rpm              | 8.6 MB     00:00
+(3/3): perl-DBD-MySQL-4.013-3.el6.x86_64.rpm             | 134 kB     00:00
+——————————————————————————–
+Total                                            10 MB/s | 9.6 MB     00:00
+Running rpm_check_debug
+Running Transaction Test
+Transaction Test Succeeded
+Running Transaction
+  Installing : mysql-5.1.61-4.el6.x86_64                                    1/3
+  Installing : perl-DBD-MySQL-4.013-3.el6.x86_64                            2/3
+  Installing : mysql-server-5.1.61-4.el6.x86_64                             3/3
+Installed products updated.
+  Verifying  : perl-DBD-MySQL-4.013-3.el6.x86_64                            1/3
+  Verifying  : mysql-server-5.1.61-4.el6.x86_64                             2/3
+  Verifying  : mysql-5.1.61-4.el6.x86_64                                    3/3
+ 
+Installed:
+  mysql-server.x86_64 0:5.1.61-4.el6
+ 
+Dependency Installed:
+  mysql.x86_64 0:5.1.61-4.el6        perl-DBD-MySQL.x86_64 0:4.013-3.el6
+ 
+Complete!
