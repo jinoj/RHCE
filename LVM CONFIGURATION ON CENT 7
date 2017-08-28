@@ -1,0 +1,80 @@
+LOGICAL VOLUME MANAGEMENT:
+LVM is a tool for logical volume management which includes allocating disks, striping, mirroring and resizing logical volumes.
+With LVM, a hard drive or set of hard drives is allocated to one or more physical volumes. LVM physical volumes can be placed on other block devices which might span two or more disks.
+The physical volumes are combined into logical volumes.
+Since a physical volume cannot span over multiple drives, to span over more than one drive, create one or more physical volumes per drive.
+The volume groups can be divided into logical volumes, which are assigned mount points, such as /home and / and file system types, such as ext2 or ext3. When "partitions" reach their full capacity, free space from the volume group can be added to the logical volume to increase the size of the partition. When a new hard drive is added to the system, it can be added to the volume group, and partitions that are logical volumes can be increased in size.
+On the other hand, if a system is partitioned with the ext3 file system, the hard drive is divided into partitions of defined sizes. If a partition becomes full, it is not easy to expand the size of the partition. Even if the partition is moved to another hard drive, the original hard drive space has to be reallocated as a different partition or not used.
+COMMANDS:
+
+[root@server ~]#fdisk /dev/sdb
+Create to partition with a size if 1G and 1G, with an id 8e
+[root@server ~]#partprobe
+
+[root@server ~]#pvcreate /dev/sdb1 /dev/sdb2
+Physical volume creation
+[root@server ~]#pvdisplay
+
+[root@server ~]#vgcreate vg1 /dev/sdb1 /dev/sdb2
+Combining physical volumes to the Volume group with the common name vg1
+[root@server ~]#vgdisplay
+
+[root@server ~]#lvcreate -L +1G -n lv1 vg1
+Creating logical volume in a size of 1G from the volume group 2G size vg1 witha name lv1
+[root@server ~]#lvdisplay
+[root@server ~]#mkfs.ext4 /dev/vg1/lv1
+[root@server ~]#mkdir TEST
+[root@server ~]#mount /dev/vg1/lv1 /root/TEST
+
+[root@server ~]#lvresize -L +50M /dev/vg1/lv1
+Resizing the logical volume with extra 50MB.
+To extend the volume group with extra 1GB space:
+[root@server ~]#pvcreate /dev/sdb3
+[root@server ~]#vgextend vg1 /dev/sdb3
+[root@server ~]#vgscan
+To check
+
+[root@server ~]#vgreduce vg1 /dev/sdb3
+To unmount:
+[root@server ~]#umount /dev/vg1/lv1
+[root@server ~]#lvremove /dev/vg1/lv1
+[root@server ~]#vgremove /dev/vg1
+[root@server ~]#pvremove /dev/sdb1 /dev/sdb2 /dev/sdb3
+
+
+
+LVM Snapshot:
+Create a LVM partition and create a file in it (eg:/dev/vg1/lv1) and mount it in /root/lvdata
+
+[root@localhost ~]#umount /lvdata
+[root@localhost ~]#lvremove /dev/vg1/lv1
+[root@localhost ~]#vgs
+[root@localhost ~]#lvs
+[root@localhost ~]#ll /etc/lvm/archieve/
+[root@localhost ~]#vgcfgrestore --list vg1
+
+copy the last created file
+[root@localhost ~]#vgcfgrestrore -f <paste it> vg1
+[root@localhost ~]#lvs
+[root@localhost ~]#lvscan
+[root@localhost ~]#lvchage -ay /dev/vg1/lv1
+
+To activate
+[root@localhost ~]#mount /dev/vg1/lv1 /lvdata
+[root@localhost ~]#cd /lvdata
+[root@localhost ~]#ll
+
+Now you can see the deleted files.
+
+Taking backup of the partition table
+[root@localhost ~]#sfdisk -d /dev/sdb > sdb.partition.table.2016
+To backup
+[root@localhost ~]#cat sda.partition.table.2016
+
+To view
+[root@localhost ~]#sfdisk -d /dev/sdb > sdb.partition.table.2016
+To restore
+
+
+
+
