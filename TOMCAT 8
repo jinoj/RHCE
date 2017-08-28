@@ -1,0 +1,94 @@
+tomcat 8
+======
+
+# cd /opt
+# wget http://apache.arvixe.com/tomcat/tomcat-8/v8.0.22/bin/apache-tomcat-8.0.22.tar.gz
+# tar xzvf apache-tomcat-8.0.22.tar.gz
+# groupadd tomcat8
+# useradd -s /bin/bash -g tomcat8 tomcat8
+# ln -s /opt/apache-tomcat-8.0.22 /opt/tomcat
+# chown -R tomcat8:tomcat8 /opt/tomcat /opt/apache-tomcat-8.0.22
+# vi /usr/lib/systemd/system/tomcat8.service
+
+add this line
+[Unit]
+Description=Apache Tomcat 8
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+RemainAfterExit=yes
+User=tomcat8
+Group=tomcat8
+
+[Install]
+WantedBy=multi-user.target
+
+# systemctl daemon-reload
+# systemctl start tomcat8
+# systemctl enable tomcat8
+# curl localhost:8080
+
+# vi /opt/tomcat/conf/tomcat-users.xml
+ 
+add admin and manager username and password
+============================================
+
+<tomcat-users> (find the this condent add end of line)
+
+<!-- user manager can access only manager section -->
+<role rolename="manager-gui"></role>
+<user username="manager" password="password" roles="manager-gui"></user>
+
+<!-- user admin can access manager and admin section both -->
+<role rolename="admin-gui"></role>
+<user username="admin" password="password" roles="manager-gui,admin-gui"></user>
+
+load balancing for tomcat using mod_jk
+=======================================
+172.31.6.118      load    -----------install httpd tomcat and mod_jk
+172.31.7.76       server2 -----------> install httpd tomcat
+172.31.13.202     server1  -----------> install httpd tomcat
+
+Install mod_jk
+================
+# wget http://www.apache.org/dist/tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.37-src.tar.gz
+# tar zxf tomcat-connectors-1.2.37-src.tar.gz
+# cd tomcat-connectors-1.2.37-src/native
+# yum install -y httpd-devel gcc gcc-c++ make libtool
+# ./configure –with-apxs=/usr/sbin/apxs  ---------> if incase getting failed apxs  install (apache2-mod_jk-1.2.37-4.1.x86_64.rpm) package
+# make
+# libtool –finish /usr/lib64/httpd/modules
+# make install
+
+# vi /etc/httpd/conf.d/mod_jk.conf
+
+<IfModule mod_jk.c>
+JkWorkersFile /etc/httpd/conf/workers.properties
+JkLogFile  /var/log/jk.log
+JkShmFile  /var/log/jk-runtime-status
+</IfModule>
+
+# vi /etc/httpd/conf/workers.properties
+
+ worker.list=loadbalancer,status
+ 
+ worker.server1.port=8080
+ worker.server1.host=server1
+ worker.server1.type=ajp13
+
+ worker.server2.port=8080
+ worker.server2.host=server2
+ worker.server2.type=ajp13
+
+ worker.server1.lbfactor=1
+ worker.server2.lbfactor=1
+
+ worker.loadbalancer.type=lb
+ worker.loadbalancer.balance_workers=server1,server2
+
+ worker.status.type=status
+~                           
+====> now execute with jsp in webapps file in load balancer and verify calalena.log
