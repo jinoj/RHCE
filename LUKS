@@ -1,0 +1,52 @@
+Encryption LUKS:
+
+LUKS= Linux Unified Key Setup is a disk encrption specification
+"cypsetup/dm-crypt"= disk encryption in linux kernel
+"crypsetup" uses only one key, also provides commands to deal with the luks on disk format
+
+It uses PBKDF2 feature
+"cryptsetup" also enables user to mount and unmount a dm-crypt file system
+"device-mapper" is a framework provided by the linux kernel for mapping physical block devices into higher level virtual block devices
+
+COMMANDS:
+
+[root@localhost ~]#fdisk /dev/sdb
+create a partition
+[root@localhost ~]#partprobe
+[root@localhost ~]#cat /proc/partitions
+To check partition 
+[root@localhost ~]#cryptsetup luksformat /dev/sdb1
+:YES
+
+passphrase:
+[root@localhost ~]#cd /dev/mapper
+[root@localhost mapper]#ls
+[root@localhost ~]#cryptsetup luksopen /dev/sdb1 secret
+paasphrase:
+[root@localhost ~]#cd /dev/mapper
+[root@localhost mapper]#ls
+[root@localhost ~]#mkfs -t ext4 /dev/mapper/secret
+[root@localhost ~]#mkdir mnt
+[root@localhost ~]#mount /dev/mapper/secret mnt/
+[root@localhost ~]#cd mnt
+[root@localhost mnt]#ls
+[root@localhost mnt]#touch myfile
+[root@localhost mnt]#cd
+[root@localhost ~]#umount /mnt
+[root@localhost ~]#cryptsetup luksclose /dev/mapper/secret
+[root@localhost ~]#cd /dev/mapper
+[root@localhost mapper]#ls
+
+Automated booting with encrypted devices
+-> create an entry in /etc/crypttab---->>this automates the crypsetup luks open setup
+-> mount the encrypted device from /dev/fstab
+
+[root@localhost ~]#vi /etc/crypttab
+secret /dev/sdb1
+:wq!
+
+[root@localhost ~]#vi /etc/fstab
+/dev/mapper/secrts    /mnt    ext4    defaults    1   2
+[root@localhost ~]#reboot
+
+/mnt asks for password
