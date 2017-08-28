@@ -1,0 +1,23 @@
+load balancing
+
+loadbalance : 192.168.1.49
+192.168.1.50:80"-------> web server1
+192.168.1.51:80"-------> web server2
+
+configure on 192.168.1.49
+
+vim /etc/httpd/conf.d/load.conf
+add this 
+
+<Proxy "balancer://name">
+    BalancerMember "http://192.168.1.50:80"-------> web server1
+    BalancerMember "http://192.168.1.51:80"-------> web server2
+</Proxy>
+ProxyPass "/" "balancer://name"
+ProxyPassReverse "/" "balancer://mycluster"
+
+
+verfy: curl 192.168.1.49
+
+
+
