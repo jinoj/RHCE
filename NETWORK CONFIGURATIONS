@@ -1,0 +1,29 @@
+NETWORK CONFIGURATIONS:
+Configuring network ip address.
+[root@server ~]#ls /etc/sysconfig/network-scripts/ifcfg_*
+To check the current status for network configuration files
+
+[root@server ~]#nmcli con show
+nmcli=network manangement command line interface
+This is a command to show the list of network connection.
+
+[root@server ~]#nmcli device show
+This is a command to show the list of network device presently connected.
+
+[root@server ~]#nmcli con add con-name enp0s3 ifname eth0 type ethernet
+Adding a new connection named eth0 and copying the content from enp0s3.
+
+[root@server ~]#nmcli con modify enp0s3 ipv4.addresses "192.168.1.2/24" ipv4.Gateway "192.168.1.1"
+modifing the ip address to IPV4, Gateway. (should be inthe same class) 
+[root@server ~]#nmcli con modify enp0s3 ipv4.method manual
+[root@server ~]#nmcli connection down enp0s3
+[root@server ~]#nmcli connection up enp0s3
+
+to update the connection.
+[root@server ~]#nmcli con modify enp0s3 ipv4.method auto
+Auto-automatic assigning of ip by DHCP.
+[root@server ~]#nmcli connection down enp0s3
+[root@server ~]#nmcli connection up enp0s3
+[root@server ~]#nmcli connection delete enp0s3
+
+To delete the connection enp0s3.
