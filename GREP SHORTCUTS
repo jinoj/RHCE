@@ -1,0 +1,30 @@
+Global Regular Expression Printer
+
+cat > testfile
+grep "this" testfile----------------->search for a word "this" in the "testfile"
+cp testfile testfile1----------------> copy testfile to tesfile1
+grep "this" test*-----------> search for the word "this" in all the existing file name starts with "test"
+grep -r "this" *------------------>search for the word "this" in all the existing file
+grep -i "this" testfile-------->insensitive
+grep -iw "is" testfile-------> search for that particular word
+grep "lines.*empty" testfile----> search for a line starts with "line and ends with empty"
+grep -c "this" testfile----->counting the line with has the word this
+grep -v "this" testfile-----> display the lines which doesnt have the word "this"
+grep -v -e "this" -e "is" testfile---->display the lines which doesnt have the word "this" "is"
+grep -n "this" testfile- ---->numbers
+-------------------------------------
+
+
+GREP:(Global Regular Expression Printer)
+grep "is" file
+grep -i "this" file
+grep "this" fi*
+grep "line.*empty" file
+grep -w file
+grep -r "is" *
+grep -v "is" file
+grep -v -e "is" -e "this" file
+grep -c "is" file
+grep -n "this" file
+-i=insensitive, -w=word, -r=recursive, -e=except, -c=line count, -n=no.of.lines
+===========================================================
