@@ -1,0 +1,112 @@
+SE LINUX configuration:
+
+Security Enhanced Linux or SELinux is an advanced access control mechanism built into most modern Linux distributions.
+
+Many system administrators find SELinux a somewhat uncharted territory. The topic can seem daunting and at times quite confusing. However, a properly configured SELinux system can greatly reduce security risks, and knowing a bit about it can help you troubleshoot access-related error messages. 
+
+Installing SELinux Packages
+	A number of packages are used in SELinux. Some are installed by default. Here is a list for Red Hat-based distributions:
+
+policycoreutils (provides utilities for managing SELinux)
+policycoreutils-python (provides utilities for managing SELinux)
+selinux-policy (provides SELinux reference policy)
+selinux-policy-targeted (provides SELinux targeted policy)
+libselinux-utils (provides some tools for managing SELinux)
+setroubleshoot-server (provides tools for deciphering audit log messages)
+setools (provides tools for audit log monitoring, querying policy, and file context management)
+setools-console (provides tools for audit log monitoring, querying policy, and file context management)
+mcstrans (tools to translate different levels to easy-to-understand format)
+
+SELinux Modes
+
+It's time to start playing around with SELinux, so let's begin with SELinux modes. At any one time, SELinux can be in any of three possible modes:
+
+Enforcing
+Permissive
+Disabled
+
+	In enforcing mode SELinux will enforce its policy on the Linux system and make sure any unauthorized access attempts by users and processes are denied. The access denials are also written to relevant log files. We will talk about SELinux policies and audit logs later.
+	Permissive mode is like a semi-enabled state. SELinux doesn't apply its policy in permissive mode, so no access is denied. However any policy violation is still logged in the audit logs. It's a great way to test SELinux before enforcing it.
+	The disabled mode is self-explanatory  the system won't be running with enhanced security.
+
+SELinux Policy
+	At the heart of SELinux' security engine is its policy. A policy is what the name implies: a set of rules that define the security and access rights for everything in the system. And when we say everything, we mean users, roles, processes, and files. The policy defines how each of these entities are related to one another.
+
+Some Basic Terminology
+	To understand policy, we have to learn some basic terminology. We will go into the details later, but here is a brief introduction. An SELinux policy defines user access to roles, role access to domains, and domain access to types.
+		
+Users
+	SELinux has a set of pre-built users. Every regular Linux user account is mapped to one or more SELinux users.
+
+Roles
+	A role is like a gateway that sits between a user and a process. A role defines which users can access that process. Roles are not like groups, but more like filters: a user may enter or assume a role at any time provided the role grants it. The definition of a role in SELinux policy defines which users have access to that role. It also defines what process domains the role itself has access to. Roles come into play because part of SELinux implements what's known as Role Based Access Control (RBAC).
+
+Subjects and Objects
+	A subject is a process and can potentially affect an object.
+	An object in SELinux is anything that can be acted upon. This can be a file, a directory, a port. The actions that a subject can perform on an object are the subject's permissions.
+
+Types are for Objects
+	A type is the context for a file's context that stipulates the file's purpose. For example, the context of a file may dictate that it's a web page, or that the file belongs to the /etc directory, or that the file's owner is a specific SELinux user. A file's context is called its type in SELinux lingo.
+
+So what is SELinux policy?
+	SELinux policy defines user access to roles, role access to domains, and domain access to types. First the user has to be authorized to enter a role, and then the role has to be authorized to access the domain. The domain in turn is restricted to access only certain types of files.
+
+	The policy itself is a bunch of rules that say that so-and-so users can assume only so-and-so roles, and those roles will be authorized to access only so-and-so domains. The domains in turn can access only so-and-so file types. 
+
+
+
+COMMANDS:
+[root@server~]# vim /etc/sysconfig/selinux
+[root@server~]#setenforce enforcing
+[root@server~]#setenforce permissive
+[root@server~]#vim /etc/sysconfig/selinux
+[root@server~]#cd /
+[root@server /]#ls -Z
+
+
+
+it will show all the directories on the system--> context consists of 3 different parts
+eg: system_u1:object_r[bin_t:s0
+
+system=user
+object=role
+bin_t:s0=Type
+
+
+
+[root@server ~]# yum install -y httpd
+[root@server~]#cd /var/www/
+[root@server~]#ls -Z
+it will list all the context level available
+
+[root@server~]#semanage fcontext  -l
+[root@server~]#semanage fcontext  -l | grep http
+it will show the context level for http
+
+[root@server~]#yum what provides */sepolicy
+
+utility to generate a man page for selinux
+
+[root@server~]#yum install -y policycoreutils-devel
+[root@server~]#cd /usr/share/man/
+[root@server~]#sesepolicy manpage -a -p /usr/share/man/man8
+[root@server~]#mandb
+[root@server~]#man -k selinux
+[root@server~]#man httpd_selinux
+[root@server~]#cd /var/www
+[root@server~]#ls -Z
+[root@server~]#man semanage-fcontext
+
+
+
+Booleans:
+Boolean is an ON/OFF switch to turn on and off the rules for few process.
+[root@server~]#getsebool -a
+
+show all boolean and its current stage
+[root@server~]#semanage boolean -l
+
+show current status of all the policies
+[root@server~]#man -k  _selinux | grep ftp
+[root@server~]#man ftpd_selinux
+[root@server~]#getsebool -a | grep ftp
