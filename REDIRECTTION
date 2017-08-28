@@ -1,0 +1,30 @@
+Redirection:
+-> Input Redirection
+-> Output redirection
+-> Error redirection
+-> Pipe redirection
+
+Input Redirection:
+wc file
+cat > file1
+cat >> file2
+
+Output Redirection:
+ls
+dir
+date
+wc
+ll
+
+Input and output redirection:
+
+date > file
+ls > file1
+
+Error redirection:
+lss
+lss 2> error.txt
+ls /binn 2>> error.txt
+
+Input output and error redirection:
+ls /usr/local /binn > command.txt 2>&1
