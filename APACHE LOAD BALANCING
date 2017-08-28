@@ -16,6 +16,11 @@ add this
 ProxyPass "/" "balancer://name"
 ProxyPassReverse "/" "balancer://mycluster"
 
+[root@server~]#firewall-cmd --permanent --add-service=httpd
+[root@server~]#firewall-cmd --permanent --add-service=https
+[root@server~]#systemctl restart httpd
+[root@server~]#systemctl enable httpd
+[root@server~]#systemctl status httpd
 
 verfy: curl 192.168.1.49
 
