@@ -1,0 +1,16 @@
+Creating an empty file:
+
+truncate -s 1MB filename
+ls -l file name
+truncate -s -1MB filename
+truncate -s +1MB filename
+
+dd if=/dev/zero of=filename bs=1024 count=1024
+ to create 1MB file
+dd if=/dev/zero of=filename bs=1024 count=1
+ to create 1KB file
+dd if=/dev/zero of=filename bs=1 count=1
+ to create 1B file
+dd if=/dev/zero of=filename bs=14MB count=1
+ to create 14MB file
+dd if=/dev/urandom of=filename bs=14MB count=1
