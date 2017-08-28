@@ -1,0 +1,32 @@
+
+APACHE VIRTUAL HOST CONFIGURATION
+
+[root@server~]#vi /etc/httpd/conf/httpd.conf
+
+INSERT
+<VirtualHost 172.20.30.40:80>
+    ServerAdmin www1.example.com
+    DocumentRoot "/var/vhosts/www1"
+    ServerName www1.example.com
+    ErrorLog "/var/vhosts/www1/error_log"
+    CustomLog "/var/vhosts/www1/access_log" combined
+</VirtualHost>
+
+
+[root@server~]#vim /var/vhosts/www1/index.html
+
+INSERT
+<html>
+<head>
+<title>Redhat Enterprise Linux</title>
+</head>
+<body>Linux 7</body>
+</html>
+
+:wq!
+
+echo "172.20.30.40 www1.example.com">> /etc/hosts
+
+verify :
+
+curl www1.example.com
