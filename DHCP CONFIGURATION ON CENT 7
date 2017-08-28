@@ -1,0 +1,41 @@
+DHCP Configuration:
+	DHCP, or Dynamic Host Configuration Protocol, allows an administrator to configure network settings for all clients on a central server.The DHCP clients request an IP address from the DHCP server on the network. The DHCP server in turn leases the client an IP address within a given range.The information includes its IP address, along with the network's name server, gateway and net mask.
+
+DHCP makes network administration easier
+
+Subnet and netmask should be 192.168.1.1 255.255.255.0
+Gateway Should be 192.168.1.1
+DNS Sever Should be 192.168.1.1
+Domain Name should be server.redhat.com
+Range from 192.168.1.10-192.168.1.50
+
+Commands:
+In SERVER,
+Package for DHCP
+[root@server ~]#yum -y install dhcp
+DHCP configuration file is in here
+[root@server ~]#vim /etc/dhcp/dhcp.conf
+Required command lines for dhcp will present in here
+[root@server ~]#vim /usr/share/doc/dhcp-4.2.5/dhcpd.conf.example
+Go to 
+[root@server ~]#vim /etc/dhcp/dhcp.conf
+INSERT
+option domain-name "red.net";
+option domain-name-server 192.168.1.9;
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+subnet 192.168.1.0 netmask 255.255.255.0 {
+range dynamic-bootp 192.168.1.10 192.168.1.50;
+option broadcast-address 192.168.1.255;
+option router 192.168.1.1;
+}
+:wq!
+[root@server ~]#firewall-cmd --permanent --add-service=dhcp
+[root@server ~]#firewall-cmd --reload
+[root@server ~]#systemctl restart dhcpd.service
+[root@server ~]#systemctl status dhcpd.service
+[root@server ~]#systemctl enable dhcpd.service
+
+In CLIENT
+Just enable DHCP
