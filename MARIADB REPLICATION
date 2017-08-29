@@ -1,0 +1,93 @@
+MASTER IP 172.31.6.209
+SERVER IP 172.31.0.232
+
+vim /etc/my.cnf----->master server
+server-id=10
+log-bin=mysql.bin
+
+vim /etc/my.cnf -------> slave server
+server-id=20
+log-bin=mysql-bin ---------->both side replication if need use it
+
+BOTH SERVER INSTALL FOLLOWING STEPS:
+
+yum install mariadb-server mariadb -y
+systemctl start mariadb
+systemctl enable mariadb
+firewall-cmd --permanent --add-port=3306/tcp
+firewall-cmd --reload
+
+
+MASTER SERVER
+mysql -u root -p
+show databases;
+create database jino;
+show databases;
+create user 'jino'@'%' identified by 'aj'
+grant replication slave on *.* to 'jino'@'%' identified by 'aj';
+flush privileges;
+flush tables with read lock;
+show master status; ---------------------------->NOTE LOG POSITON 245
+
+mysqldump --all-databases --user=root --password --master-data > masterdatabases.sql-------> ALL DATABASE BACKUP
+mysqldump -u root -p jino > jino.sql--------------------------------------------------------> partcular file
+
+scp masterdatabases.sql ansible@jj:/
+
+mysql -u root -p
+UNLOCK TABLES;
+quit;
+
+
+slave server
+============
+
+
+systemctl restart mariadb
+mysql -u root -p < masterdatabases.sql
+mysql -u root -p
+stop slave;
+CHANGE MASTER TO MASTER_HOST='172.31.6.209', MASTER_USER='jino', MASTER_PASSWORD='aj', MASTER_LOG_FILE='mariadb-bin.000001', MASTER_LOG_POS=245;
+start slave;
+show processlist;
+show slave status \G;
+
+
+master server
+===============
+
+netstat -tulpna |  egrep -i established.*mysql
+
+musql -u root -p
+show processlist;
+unlock table;
+
+stop slave;
+CHANGE MASTER TO MASTER_HOST='172.31.0.232', MASTER_USER='jino', MASTER_PASSWORD='aj', MASTER_LOG_FILE='mariadb-bin.000001', MASTER_LOG_POS=245;
+start slave;
+show slave status \G;
+
+check file create with dbs
+
+notes:
+
+master:
+======
+nano /etc/my.cnf
+
+[mysqld]
+server_id=1
+log-basename=master
+log-bin
+binlog-format=row
+binlog-do-db=<databasename>
+
+
+slave:
+======
+nano /etc/my.cnf
+
+[mysqld]
+server-id = 2
+replicate-do-db=<db to replicate>
+
