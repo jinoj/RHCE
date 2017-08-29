@@ -1,0 +1,18 @@
+pache default port is 80 and 443
+
+now i am want 8585
+
+so i am change in conf file
+
+vim /etc/httpd/conf/httpd.conf
+change Listen 80 to Listen 8585
+
+yum install policycoreutils-python
+semanage port -l | grep '^http_port_t'
+semanage port -a -t http_port_t -p tcp 8585
+semanage port -l | grep '^http_port_t' ----------------> verify add or not
+systemctl restart httpd
+
+curl localhost:8585
+
+if you want add to firewalld same process
