@@ -1,0 +1,8 @@
+#systemctl status sshd
+#vim /etc/ssh/sshd_config
+uncomment 
+Port 22 and change to desire port
+Port 2222
+#semanage port -a -t ssh_port_t -p tcp 2222
+#systemctl restart sshd
+#systemctl status sshd
