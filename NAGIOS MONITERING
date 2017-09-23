@@ -1,3 +1,4 @@
+     yum install httpd php php-cli gcc glibc glibc-common gd gd-devel net-snmp
      useradd nagios
      passwd nagios
      groupadd nagcmd
