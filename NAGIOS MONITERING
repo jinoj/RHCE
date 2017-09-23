@@ -1,0 +1,33 @@
+     useradd nagios
+     passwd nagios
+     groupadd nagcmd
+     usermod -a -G nagcmd nagios
+     usermod -a -G nagcmd apache
+     cd /opt/
+     wget https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.3.1.tar.gz
+     tar xzf nagios-4.3.1.tar.gz
+     cd nagios-4.3.1/
+     ./configure --with-command-group=nagcmd\
+     ./configure --with-command-group=nagcmd
+     make all
+     make install
+     make install-init
+     make install-config
+     make install-commandmode
+     make install-webconf
+     htpasswd -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+     systemctl restart httpd
+     cd ..
+      wget http://nagios-plugins.org/download/nagios-plugins-2.1.4.tar.gz
+      tar xzf nagios-plugins-2.1.4.tar.gz
+     cd nagios-plugins-2.1.4/
+      ./configure --with-nagios-user=nagios --with-nagios-group=nagios
+     make
+     make install
+      /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+     systemctl start nagios
+     systemctl  daemon-reload 
+     systemctl start nagios
+     systemctl restart httpd
+     curl localhost/nagios
+     vim /var/www/html/index.html
