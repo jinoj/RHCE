@@ -8,7 +8,6 @@
      wget https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.3.1.tar.gz
      tar xzf nagios-4.3.1.tar.gz
      cd nagios-4.3.1/
-     ./configure --with-command-group=nagcmd\
      ./configure --with-command-group=nagcmd
      make all
      make install
