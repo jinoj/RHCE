@@ -26,7 +26,7 @@ download from jenkins website jenkins.war file
 
 permanently start with jenkins
 
-# cp jenkins.war /usr/local/bin/jenkins.war
+# cp jenkins.war /usr/local/bin/
 # cd /etc/systemd/system
 #vim jenkins.service
 
