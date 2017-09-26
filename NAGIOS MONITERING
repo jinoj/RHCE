@@ -31,3 +31,127 @@
      systemctl restart httpd
      curl localhost/nagios
      vim /var/www/html/index.html
+
+
+nagios remote host monitering
+===============================
+
+
+[root@tecmint]# yum install -y gcc glibc glibc-common gd gd-devel make net-snmp openssl-devel
+[root@tecmint]# useradd nagios
+[root@tecmint]# passwd nagios
+[root@tecmint]# cd /root/nagios
+[root@tecmint nagios~]# wget https://www.nagios-plugins.org/download/nagios-plugins-2.1.2.tar.gz
+[root@tecmint nagios~]# tar -xvf nagios-plugins-2.1.2.tar.gz
+[root@tecmint nagios ~]# ls -l
+total 2640
+drwxr-xr-x. 15 root root    4096 Aug  1 21:58 nagios-plugins-2.1.2
+-rw-r--r--.  1 root root 2695301 Aug  1 21:58 nagios-plugins-2.1.2.tar.gz
+[root@tecmint nagios]# cd nagios-plugins-2.1.2
+[root@tecmint nagios-plugins-2.1.2]# ./configure 
+[root@tecmint nagios-plugins-2.1.2]# make
+[root@tecmint nagios-plugins-2.1.2]# make install
+[root@tecmint nagios-plugins-2.1.2]# chown nagios.nagios /usr/local/nagios
+[root@tecmint nagios-plugins-2.1.2]# chown -R nagios.nagios /usr/local/nagios/libexec
+[root@tecmint nagios-plugins-2.1.2]# yum install xinetd
+[root@tecmint nagios-plugins-2.1.2]# cd /root/nagios
+[root@tecmint nagios]# wget http://liquidtelecom.dl.sourceforge.net/project/nagios/nrpe-3.x/nrpe-3.0.tar.gz
+[root@tecmint nagios]# tar xzf nrpe-3.0.tar.gz
+[root@tecmint nrpe-3.0]# cd nrpe-3.0
+[root@tecmint nrpe-3.0]# ./configure
+[root@tecmint nrpe-3.0]# make all
+[root@tecmint]# make install-daemon
+
+ Verify NRPE Daemon Remotely
+ ===========================
+ 
+[root@tecmint]# /usr/local/nagios/libexec/check_nrpe -H <remote_linux_ip_address>
+
+Adding Remote Linux Host to Nagios Monitoring Server
+===================================================
+[root@tecmint]# cd /usr/local/nagios/etc/
+[root@tecmint]# touch hosts.cfg
+[root@tecmint]# touch services.cfg
+[root@tecmint]# vi /usr/local/nagios/etc/nagios.cfg
+
+add thr two files
+cfg_file=/usr/local/nagios/etc/hosts.cfg
+cfg_file=/usr/local/nagios/etc/services.cfg
+
+[root@tecmint]# vi /usr/local/nagios/etc/hosts.cfg
+
+## Default Linux Host Template ##
+define host{
+name                            linux-box               ; Name of this template
+use                             generic-host            ; Inherit default values
+check_period                    24x7        
+check_interval                  5       
+retry_interval                  1       
+max_check_attempts              10      
+check_command                   check-host-alive
+notification_period             24x7    
+notification_interval           30      
+notification_options            d,r     
+contact_groups                  admins  
+register                        0                       ; DONT REGISTER THIS - ITS A TEMPLATE
+}
+## Default
+define host{
+use                             linux-box               ; Inherit default values from a template
+host_name                       tecmint		        ; The name we're giving to this server
+alias                           CentOS 6                ; A longer name for the server
+address                         5.175.142.66            ; IP address of Remote Linux host
+}
+
+
+
+[root@tecmint]# vi /usr/local/nagios/etc/services.cfg
+
+define service{
+use                     generic-service
+host_name               tecmint
+service_description     CPU Load
+check_command           check_nrpe!check_load
+}
+define service{
+use                     generic-service
+host_name               tecmint
+service_description     Total Processes
+check_command           check_nrpe!check_total_procs
+}
+define service{
+use                     generic-service
+host_name               tecmint
+service_description     Current Users
+check_command           check_nrpe!check_users
+}
+define service{
+use                     generic-service
+host_name               tecmint
+service_description     SSH Monitoring
+check_command           check_nrpe!check_ssh
+}
+define service{
+use                     generic-service
+host_name               tecmint
+service_description     FTP Monitoring
+check_command           check_nrpe!check_ftp
+}
+
+[root@tecmint]# vi /usr/local/nagios/etc/objects/commands.cfg
+
+add content
+
+define command{
+command_name check_nrpe
+command_line $USER1$/check_nrpe -H $HOSTADDRESS$ -c $ARG1$
+}
+
+[root@tecmint]# /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+
+Total Warnings: 0
+Total Errors:   0
+
+[root@tecmint]# systemctl restart nagios
+
+
