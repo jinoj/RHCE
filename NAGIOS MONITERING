@@ -25,6 +25,37 @@
      make
      make install
       /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+      
+      
+
+I created this file: (if not running nagios add the file)
+
+ sudo vi /etc/systemd/system/nagios.service
+
+and added the following:
+
+[Unit]
+Description=Nagios
+BindTo=network.target
+
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=nagios
+Group=nagios
+Type=simple
+ExecStart=/usr/local/nagios/bin/nagios /usr/local/nagios/etc/nagios.cfg
+
+Then the following:
+
+   sudo systemctl enable /etc/systemd/system/nagios.service
+   sudo systemctl  start nagios
+   sudo systemctl  restart nagios
+
+
+      
      systemctl start nagios
      systemctl  daemon-reload 
      systemctl start nagios
