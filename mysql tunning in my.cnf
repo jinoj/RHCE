@@ -1,0 +1,76 @@
+#Parameters for improvement of performance
+
+http://linuxpitstop.com/tips-to-improve-mariadb-performance/
+===========================================================
+
+To enable this parameter you have to set the following parameter in /etc/my.cnf file.
+
+innoDB file-per-table
+=====================
+
+innodb_file_per_table=1
+
+InnoDB Buffer Pool Size
+=======================
+default value: The default value of Buffer pool size is 8MB
+
+ innodb_buffer_pool_size = 1G
+
+Disable Swap In MySQL
+====================
+
+default swapiness value is 60
+
+ sysctl -w vm.swappiness=0 
+
+max conncetions:
+================
+
+Small websites consume 300 to 500 connections normally while huge websites consume 1000 to 1500 connections.
+
+ Max connections = 300 
+
+Thread Cache Size:
+==================
+
+calculate thread cache size
+
+ 100 –((Threads_Created / Connections) *100)
+
+ >mysql&gt; show status like 'Threads_created'; ---> this value is 14515
+ >mysql&gt; show status like 'Connections';     ---> this value is 36372200
+
+100-((14515/36372200)*100) = 96
+
+ thread_cache_size = 16; 
+
+Disable MySQL DNS Lookups
+========================
+
+ skip-name-resolve 
+
+Query Cache Size
+================
+query_cache_size = 64M 
+
+Tmp Table Size & Max Heap Table Size
+====================================
+
+(These parameters are set to avoid disk writes on your servers. For efficient performance, both of these values should be same)
+
+ tmp_table_size= 64M 
+ max_heap_table_size= 64M 
+
+
+
+
+Slow Query Logs
+===============
+slow-query-log = 1
+slow-query-log-file = /var/lib/mysql/mysql-slow.log
+long_query_time = 1 
+
+Idle Connections
+================
+
+ wait_timeout=60 
