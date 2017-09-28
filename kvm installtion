@@ -1,0 +1,35 @@
+
+
+install packages:
+=================
+
+# yum install qemu-kvm qemu-img virt-manager libvirt libvirt-python libvirt-client virt-install virt-viewer kvm qemu
+
+install iso images:
+===================
+
+# virt-install  --name=itzgeekguest  --ram=1024  --vcpus=1  --cdrom=/tmp/CentOS-6.5-x86_64-minimal.iso --os-type=linux --os-variant=rhel6  --network bridge=br0 --graphics=spice  --disk path=/var/lib/libvirt/images/itzgeekguest.dsk,size=4
+
+
+–name  –  Name of the Virtual machine
+
+–ram – Memory size in MB
+
+–vcpus – Virtual CPU’s in numbers
+
+–cdrom – Location of the ISO image
+
+–os-type – OS types like Linux, Windows, and etc.
+
+–os-variant  – OS variant like RHEL 6, Solaris
+
+–network – Networking
+
+–graphics – Guest display settings
+
+–disk path –  Location of the disk with size of 4 GB
+
+virtual manager:
+===============
+
+# virt-manager
