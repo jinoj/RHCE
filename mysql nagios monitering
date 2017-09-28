@@ -1,0 +1,73 @@
+Monitoring MySQL:
+
+Step-7: Download, Extract and install the MySQL Plugin:
+
+wget http://labs.consol.de/wp-content/uploads/2010/10/check_mysql_health-2.1.3.tar.gz
+
+tar -zxvf check_mysql_health-2.1.3.tar.gz
+cd check_mysql_health-2.1.3
+./configure --prefix=/usr/local/nagios --with-nagios-user=nagios --with-nagios-group=nagios --with-perl=/usr/bin/perl
+make
+make install
+
+Step-8: Create database user:
+grant usage, replication client on *.* to 'nagios'@'localhost' identified by 'nagios';
+
+Step-9: Provide email address for nagiosadmin:
+[Change contacts.cfg file accordingly.]
+vi /usr/local/nagios/etc/objects/contacts.cfg
+
+define contact{
+contact_name nagiosadmin ; Short name of user
+use generic-contact ; Inherit default values from generic-contact template (defined above)
+alias Kedar ; Full name of user
+email kedar@nitty-witty.com ; <<***** CHANGE THIS TO YOUR EMAIL ADDRESS ******
+}
+
+Step-10: Configuring Nagios to Monitor MySQL Server
+
+vi /usr/local/nagios/etc/nagios.cfg
+add following line:
+cfg_file=/usr/local/nagios/etc/objects/mysqlmonitoring.cfg
+
+Define check_mysql_health command as follows:
+
+vi /usr/local/nagios/etc/objects/commands.cfg
+
+define command{
+command_name check_mysql_health
+command_line $USER1$/check_mysql_health -H $ARG4$ --username $ARG1$ --password $ARG2$ --port $ARG5$ --mode $ARG3$
+}
+
+Enter services to be monitored in mysqlmonitoring.cfg:
+
+vi /usr/local/nagios/etc/objects/mysqlmonitoring.cfg
+Add:
+
+define service{
+use local-service
+host_name localhost
+service_description MySQL connection-time
+check_command check_mysql_health!nagios!nagios!connection-time!127.0.0.1!3306!
+}
+
+define service{
+use local-service
+host_name localhost
+service_description MySQL slave-io-running
+check_command check_mysql_health!nagios!nagios!slave-io-running!127.0.0.1!3306!
+}
+
+define service{
+use local-service
+host_name localhost
+service_description MySQL slave-sql-running
+check_command check_mysql_health!nagios!nagios!slave-sql-running!127.0.0.1!3306!
+}
+
+Here we’ve monitored 3 services: Connection-time, io thread and sql thread (replication) status. You can monitor more parameters described here: http://labs.consol.de/nagios/check_mysql_health/
+
+Note: Every time you change configuration file, verify before starting nagios using command:
+/usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+
+Finally start nagios service and you’re done with nagios installation and configuration for monitoring MySQL.
