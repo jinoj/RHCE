@@ -3,6 +3,9 @@
 http://linuxpitstop.com/tips-to-improve-mariadb-performance/
 ===========================================================
 
+https://www.saotn.org/mysql-innodb-performance-improvement/
+===========================================================
+
 To enable this parameter you have to set the following parameter in /etc/my.cnf file.
 
 innoDB file-per-table
