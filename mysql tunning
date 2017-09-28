@@ -1,0 +1,120 @@
+===========================================================
+http://linuxpitstop.com/tips-to-improve-mariadb-performance/
+===============================================================
+10 Tips To Improve MariaDB Performance
+March 30, 2016 by Aun	
+
+MariaDB launched by the original MySQL developers, is one of the widely used RDMS. As usage of MariaDB reached an extensive level, the performance management became more critical. MariaDB contains a lot of parameters on which databases are directly dependent. Changing these parameters can improve the performance of your database and eventually the stability of your product. First of all we will discuss the two engines of mariadb databases.
+Types of Database Engines
+
+There are two types of database engines MyISAM and InnoDB. Both have their own positive and negative points and can be used depending upon the requirement of your product. The main and important difference between them is that MyISAM supports table level locking while InnoDB supports row level locking but with this benefit of InnoDB there is a drawback that it’s slower than MyISAM; like renaming InnoDB table will take much more time as compared to MyISAM table.
+Parameters for improvement of performance
+
+Following are the parameters that need to be optimized to get the maximum out of your MariaDB setup:
+
+ InnoDB file-per-table
+ InnoDB Buffer Pool Size
+ Disable Swapiness In MySQL
+ Max Connections
+ Thread Cache Size
+ Disable MySQL DNS Lookups
+ Query Cache Size
+ Tmp Table Size & Max Heap Table Size
+ Slow Query Logs
+ Idle Connections
+
+Lets review all of the above mentioned parameters in details.
+InnoDB file-per-table
+================================
+InnoDB is the default engine of mariaDB and after setting these parameters all the tables will have their own .idb file on server. Now the question arises how will it make MariaDB more efficient? As all the operations performed on this table will use the I/O of that single .idb file and if you truncate that table you can reclaim that space as the file against that table will be removed. You can also store tables on different storage device as .idb files can be present on other server. To enable this parameter you have to set the following parameter in /etc/my.cnf file.
+innodb_file_per_table=1
+
+InnoDB Buffer Pool Size
+==========================
+Memory management is critical in database servers as there can be hundreds and thousands of transactions executing per second. You can enable caching and indexing in MariaDB server by setting the InnoDB buffer pool size parameter. The amount of memory you want to dedicate solely depends upon the amount of RAM your server has. If your server is dedicated for database then you can set the parameter to 60 percent of your memory but if other services are running on the same server then you should consider a different value. The default value of Buffer pool size is 8MB and you can change this value by adding the following line in your my.cnf file
+ innodb_buffer_pool_size = 1G
+
+We have set the parameter to 1 GB
+
+Disable Swap In MySQL
+====================
+Swapping occurs when your systems runs out of physical memory and starts using the special disk known as swap. When your RAM is occupied it starts swapping and your disk I/O gets utilized which slows down the server and if proper steps are not taken then system can crash. To avoid swappiness, execute the following command on your command line.
+ sysctl -w vm.swappiness=0 
+
+The default swapiness value is 60 which will be changed to 0 which indicates that it is disabled now.
+Max Connections
+
+Max connection parameter in MySQL shows how many concurrent connections can be initiated on your MariaDB server. Small websites consume 300 to 500 connections normally while huge websites consume 1000 to 1500 connections. One important thing should be noted here that opening and closing connections totally depends upon the developer and if connections are not properly managed then your website will start showing “Too Many Connections”. Add the following line to my.cnf in order to set the parameter.
+ Max connections = 300 
+Thread Cache Size
+
+Thread cache size also optimizes the performance of your database server as it caches the number of threads but it can’t be set randomly and you have to calculate its optimum value by using the following simple formula.
+ 100 –((Threads_Created / Connections) *100) 
+
+Now we will calculate these variables.
+
+First of all Threads created can be found out by the following command.
+ mysql&gt; show status like 'Threads_created'; 
+
+Sample output:
++-----------------+-------+
+
+| Variable_name | Value |
+
++-----------------+-------+
+
+| Threads_created | 14515 |
+
++-----------------+-------+
+
+1 row in set (0.00 sec)
+
+Connections can be calculated as:
+ mysql&gt; show status like 'Connections'; 
+
+Sample output:
++---------------+----------+
+
+| Variable_name | Value |
+
++---------------+----------+
+
+| Connections | 36372200 |
+
++---------------+----------+
+
+1 row in set (0.01 sec)
+
+Now putting these values in formula will give us the following result
+
+100-((14515/36372200)*100) = 96
+
+This result is good but if you get a low number like below then you can set the parameter by adding the following line in my.cnf
+ thread_cache_size = 16; 
+Disable MySQL DNS Lookups
+
+Every time a connection is opened its IP is resolved by DNS lookup; which consumes some amount of time. To save this additional task performed by the server, we can disable reverse DNS looksups by adding the following line to my.cnf file.
+ skip-name-resolve 
+Query Cache Size
+
+Query cache size is also an important parameter as it caches all the queries which keep on repeating with same data. For small websites your value should not exceed 64MB. Increasing this value to GB’s will decrease the performance instead of making it efficient. Add the following line to my.cnf to set the required value.
+query_cache_size = 64M 
+Tmp Table Size & Max Heap Table Size
+
+These parameters are set to avoid disk writes on your servers. For efficient performance, both of these values should be same. Add the following lines to my.cnf to set these mentioned parameters.
+ tmp_table_size= 64M 
+ max_heap_table_size= 64M 
+Slow Query Logs
+
+It is one of the best feature of MariaDB which allows the database developers to improve the performance by checking the queries which are taking excessive time to execute. Add the following lines to enable slow query logs .
+slow-query-log = 1
+slow-query-log-file = /var/lib/mysql/mysql-slow.log
+long_query_time = 1 
+
+First parameter enables the slow query logs. Second lets database server know the filename in which slow queries will be exported and last parameter tells the server that what is the maximum threshold for a long query time.
+Idle Connections
+
+Connection management in MariaDB is always important as they keep the resources of systems occupied. If connections in code are not closed properly then they should be timed out and closed automatically and this can be done by setting timeout variable.
+ wait_timeout=60 
+
+Above parameter will time out connections in sleep state after 60 seconds.
