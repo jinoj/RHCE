@@ -1,0 +1,16 @@
+
+add this line
+[Unit]
+Description=xampp
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart= /opt/lampp/lampp start
+ExecStop= /opt/lampp/lampp stop
+RemainAfterExit=yes
+#User=tomcat8
+#Group=tomcat8
+
+[Install]
+WantedBy=multi-user.target
