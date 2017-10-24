@@ -54,6 +54,12 @@ create mask=0770
 Force create mode=0770
 force group=finance
 
+
+#systemctl start smb 
+#systemctl enable smb
+#systemctl start nmb
+#systemctl enable nmb
+
 CHECK CONDITION:
 ROOT@BOX:testparm
 
