@@ -1,0 +1,18 @@
+
+VIM /etc/httpd/conf.d/status.conf
+
+ExtendedStatus On
+<Location /server-status>
+    SetHandler server-status
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1
+</Location>
+<Location /server-info>
+    SetHandler server-info
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1
+</Location>
+
+#systemctl restart httpd
