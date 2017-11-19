@@ -41,7 +41,7 @@ explain:
 
 ServerTokens   Full (or not specified) 
 Info sent to clients: Server: Apache/2.4.2 (Unix) PHP/4.2.2 MyMod/1.2 
-ServerTokens   Prod    [uctOnly] 
+ServerTokens   Prod    [uctOnly] ProductOnly
 Info sent to clients: Server: Apache 
 ServerTokens   Major 
 Info sent to clients: Server: Apache/2 
