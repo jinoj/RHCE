@@ -1,9 +1,17 @@
+ls -la /etc/httpd/modules/mod_deflate.so # check permission 755
+
+vim /etc/httpd/conf.modules.d/00-base.conf # verify particular module is available or not
+
+
+
+
+
 vim /etc/httpd/conf.d/mod_deflate.conf
 
 <filesMatch "\.(js|html|txt|xlsx|php)$">
         SetOutputFilter DEFLATE
 </filesMatch>
-DeflateCompressionLevel 7
+DeflateCompressionLevel 1 # default 7
 DeflateMemLevel 8
 DeflateWindowSize 10
 
