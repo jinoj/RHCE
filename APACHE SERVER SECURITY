@@ -1,0 +1,41 @@
+vim /etc/httpd/conf.d/mod_deflate.conf
+
+<filesMatch "\.(js|html|txt|xlsx|php)$">
+        SetOutputFilter DEFLATE
+</filesMatch>
+DeflateCompressionLevel 7
+DeflateMemLevel 8
+DeflateWindowSize 10
+
+systemctl restart httpd
+
+#curl -I -H 'Accept-Encoding: gzip,deflate' http://j/index.php
+
+#DeflateCompressionLevel : This directive specify the compression level of file. By default, this level is 9. You can set up this level between 1 to 9.
+
+#DeflateMemLevel : This directive specifies how much memory should be used by zlib for compression. The default value is 9 . You can set up this value between 1 to 9.
+
+#DeflateWindowSize : This directive specifies the zlib compression window size. The default value is 15. You can set up this value between 1 to 15. Higher number means higher compression level, but it will use more server resources. 
+
+hide php versions
+=================
+
+vi /etc/php.ini
+
+expose_php = off #line 375
+
+systemctl restart httpd
+
+lynx -head -mime_header http://localhost 
+
+hide apache versions
+====================
+
+vi /etc/httpd/conf/httpd.conf
+
+ServerTokens Prod
+ServerSignature Off 
+
+systemctl restart httpd
+
+curl -I -H 'Accept-Encoding: gzip,deflate' http://localhost
