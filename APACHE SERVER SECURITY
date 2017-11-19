@@ -36,6 +36,23 @@ vi /etc/httpd/conf/httpd.conf
 ServerTokens Prod
 ServerSignature Off 
 
+explain:
+=======
+
+ServerTokens   Full (or not specified) 
+Info sent to clients: Server: Apache/2.4.2 (Unix) PHP/4.2.2 MyMod/1.2 
+ServerTokens   Prod    [uctOnly] 
+Info sent to clients: Server: Apache 
+ServerTokens   Major 
+Info sent to clients: Server: Apache/2 
+ServerTokens   Minor 
+Info sent to clients: Server: Apache/2.4 
+ServerTokens   Min[imal] 
+Info sent to clients: Server: Apache/2.4.2 
+ServerTokens   OS 
+Info sent to clients: Server: Apache/2.4.2 (Unix) 
+
+
 systemctl restart httpd
 
 curl -I -H 'Accept-Encoding: gzip,deflate' http://localhost
