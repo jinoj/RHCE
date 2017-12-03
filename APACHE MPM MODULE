@@ -1,0 +1,94 @@
+MPM Modules
+===========
+
+1.prefork Module
+    The prefork module use multiple child process and each child process has only one thread and one thread handle one connection at a time.
+    it is consume more memory
+    it is started apache 1.3 onwards
+2.worker Module
+    the worker module use multiple child process and each chile process has multiple thread and each thread handle one connection at a time.
+    Its less memory consume compare to prefork module
+    Its is started apache 2.0 onwards
+    Worker generally is a good choice for high-traffic servers because it has a smaller memory footprint than the prefork MPM and has higher performance.
+
+what is thread
+==============
+    Let's say I have a HTML file that contains three images. When I access the file, my browsers request three images to a server. so..Does apache make a thread for each images?"
+
+Yes, if two things are true: 
+     First, the browser would have to request the three images using three separate connections. 
+     Second, the three requests would have to overlap in their processing on the server side.
+
+If the browser uses only one connection,
+     using HTTP/1.1 keepalives, then even if Apache uses a thread for each connection, there's still only one thread. And even if the browser does use three connections, if the browser closes each connection before opening the next, then Apache may be able to re-use the same thread, and not need three different threads to handle the three connections.
+=======================================================================================================================================
+    The most important directives used to control this MPM are ThreadsPerChild, which controls the number of threads deployed by each child process and MaxClients, which controls the maximum total number of threads that may be launched.
+=======================================================================================================================================
+how it works for prefork module
+===============================
+
+<IfModule mpm_prefork_module>
+    StartServers        8
+    MinSpareServers     5
+    MaxSpareServers     20
+    MaxClients          256 #must be customized
+    ServerLimit         256 #must be customized
+    MaxRequestsPerChild 4000
+</IfModule>
+       
+       First of all, whenever an apache is started, it will start 8 child processes which is determined by StartServers parameter.The prefork module use multiple child process and each child process has only one thread and one thread handle one connection at a time. we have 21+1=22 ( child process {pgrep httpd | wc -l} + parent process {ps aux |grep  httpd | wc -l} ). our total memory 128GB RAM.
+       maximum client= (total Ram -Other process memory)/Resident Set Size
+
+       szz=ps -ylC httpd --sort:rss   =125Mb
+       maximum client= ((128*1024)-5120/125=1007 
+
+apache avarage memory:
+======================
+ps -ylC httpd | awk '{x += $8;y += 1} END {print "Apache Memory Usage (MB): "x/1024; print "Average Proccess Size (MB): "((y-1)*1024)}'
+       Apache Memory Usage (MB): 650.934
+       Average Proccess Size (MB): 21504
+
+<IfModule mpm_prefork_module>
+    StartServers        8
+    MinSpareServers     8
+    MaxSpareServers     49
+    MaxClients          1000 #must be customized
+    ServerLimit         1000 #must be customized
+    MaxRequestsPerChild 0 #which means that httpd process will never expire.
+</IfModule>
+
+
+
+=======================================================================================================================================
+How it works for worker module
+==============================
+For example:
+
+  ServerLimit 16
+  StartServers 2
+  MaxClients 150
+  MinSpareThreads 25
+  MaxSpareThreads 75
+  ThreadsPerChild 25
+
+     First of all, whenever an apache is started, it will start 2 child processes which is determined by StartServers parameter. Then each process will start 20 threads determined by ThreadsPerChild parameter so this means 2 process can service only 40 concurrent connections/clients i.e. 20x2=40. Now if more concurrent users comes, then another child process will start, that can service another 20 users. But how many child processes can be started is controlled by ServerLimit parameter, this means that in the configuration above, i can have 16 child processes in total, with each child process can handle 20 thread, in total handling 16x20=320 concurrent users. But if number defined in MaxClients is less which is 200 here, then this means that after 8 child processes, no extra process will start since we have defined an upper cap of MaxClients. This also means that if i set MaxClients to 1000, after 16 child processes and 320 connections, no extra process will start and we cannot service more than 320 concurrent clients even if we have increase the MaxClient parameter. In this case, we need to also increase ServerLimit to 1000/20 i.e. MaxClients/ThreadsPerChild=50
+
+     So this is the optmized configuration to server 1000 clients 
+
+    # worker MPM
+    # StartServers: initial number of server processes to start
+    # MaxClients: maximum number of simultaneous client connections
+    # MinSpareThreads: minimum number of worker threads which are kept spare
+    # MaxSpareThreads: maximum number of worker threads which are kept spare
+    # ThreadsPerChild: constant number of worker threads in each server process
+    # MaxRequestsPerChild: maximum number of requests a server process serves
+    <IfModule mpm_worker_module>
+       ServerLimit          50
+       StartServers          2   
+       MaxClients          1000
+       MinSpareThreads      20
+       MaxSpareThreads      75 
+       ThreadsPerChild      20
+       MaxRequestsPerChild   0
+    </IfModule>
+
