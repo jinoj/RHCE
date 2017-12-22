@@ -92,3 +92,18 @@ For example:
        MaxRequestsPerChild   0
     </IfModule>
 
+
+====================================================
+ 1032  vim /etc/httpd/conf.modules.d/00-mpm.conf 
+ 1033  systemctl restart httpd
+ 1034  vim /etc/httpd/conf.d/php.conf 
+ 1035  systemctl restart httpd
+ 
+ php page not loaded
+ ===================
+ 
+ vim /etc/httpd/conf.d/php.conf --> disable last two value
+ 
+ yum install libtool httpd-devel apr-devel apr
+ yum install php-zts mod_fcgid
+
