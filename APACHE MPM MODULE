@@ -99,6 +99,12 @@ For example:
  1034  vim /etc/httpd/conf.d/php.conf 
  1035  systemctl restart httpd
  
+ yum remove php-mysql
+ yum install php-mysqlnd
+ 
+ optional:
+ =========
+ 
  php page not loaded
  ===================
  
