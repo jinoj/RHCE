@@ -1,0 +1,174 @@
+Mysql Replication
+master server
+yum install http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm -y
+yum install mysql-server -y
+systemctl restart mysqld
+mysql_secure_installation
+mysql -u root -p
+create database jino;
+show databases;
+vim /etc/my.cnf
+bind-address = 192.168.122.2
+server-id = 1
+log-bin = /var/lib/mysql/mysql-bin.log
+binlog_do_db = jino
+innodb_flush_log_at_trx_commit=1
+sync_binlog=1
+expire_logs_days=7
+systemctl restart mysqld
+mysql -u root -p
+GRANT REPLICATION SLAVE ON *.* TO 'slave'@'%' IDENTIFIED BY 'slave';
+FLUSH PRIVILEGES;
+USE jino;
+FLUSH TABLES WITH READ LOCK;
+SHOW MASTER STATUS;
+mysql> SHOW MASTER STATUS;
++------------------+----------+--------------+------------------+
+| File
+| Position | Binlog_Do_DB | Binlog_Ignore_DB |
++------------------+----------+--------------+------------------+
+| mysql-bin.000001 |
+398 | jino |
+|
++------------------+----------+--------------+------------------+
+1 row in set (0.00 sec)
+mysqldump -u root -p --opt jino > jino.sql
+use jino;
+UNLOCK TABLES;
+quit;
+Slave server
+yum install http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm -y
+yum install mysql-server -y
+systemctl restart mysqld
+mysql_secure_installation
+mysql -u root -pcreate database jino;
+show databases;
+vim etcmy.cnf
+[mysqld]
+server-id
+log_bin
+binlog_do_db
+= 2
+= /var/lib/mysql/mysql-bin.log
+= jino
+systemctl restart mysqld
+mysql> stop slave;
+mysql> CHANGE MASTER TO MASTER_HOST='192.168.122.2',MASTER_USER='slave',
+MASTER_PASSWORD='slave', MASTER_LOG_FILE='mysql-bin.000003', MASTER_LOG_POS=398;
+mysql> start slave;
+Query OK, 0 rows affected (0.05 sec)
+mysql> show slave status\G;
+*************************** 1. row ***************************
+Slave_IO_State: Waiting for master to send event
+Master_Host: 192.168.122.2
+Master_User: slave
+Master_Port: 3306
+Connect_Retry: 60
+Master_Log_File: mysql-bin.000003
+Read_Master_Log_Pos: 398
+Relay_Log_File: mysqld-relay-bin.000002
+Relay_Log_Pos: 283
+Relay_Master_Log_File: mysql-bin.000003
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
+Replicate_Do_DB:
+Replicate_Ignore_DB:
+Replicate_Do_Table:
+Replicate_Ignore_Table:
+Replicate_Wild_Do_Table:
+Replicate_Wild_Ignore_Table:
+Last_Errno: 0
+Last_Error:
+Skip_Counter: 0
+Exec_Master_Log_Pos: 398
+Relay_Log_Space: 457
+Until_Condition: None
+Until_Log_File:
+Until_Log_Pos: 0
+Master_SSL_Allowed: No
+Master_SSL_CA_File:
+Master_SSL_CA_Path:
+Master_SSL_Cert:
+Master_SSL_Cipher:Master_SSL_Key:
+Seconds_Behind_Master: 0
+Master_SSL_Verify_Server_Cert: No
+Last_IO_Errno: 0
+Last_IO_Error:
+Last_SQL_Errno: 0
+Last_SQL_Error:
+Replicate_Ignore_Server_Ids:
+Master_Server_Id: 1
+Master_UUID: 85854abd-eed7-11e7-ada3-525400bb48f9
+Master_Info_File: /var/lib/mysql/master.info
+SQL_Delay: 0
+SQL_Remaining_Delay: NULL
+Slave_SQL_Running_State: Slave has read all relay log; waiting for the slave I/O thread to update it
+Master_Retry_Count: 86400
+Master_Bind:
+Last_IO_Error_Timestamp:
+Last_SQL_Error_Timestamp:
+Master_SSL_Crl:
+Master_SSL_Crlpath:
+Retrieved_Gtid_Set:
+Executed_Gtid_Set:
+Auto_Position: 0
+1 row in set (0.00 sec)
+ERROR:
+No query specified
+mysql> SHOW FULL PROCESSLIST;
++----+-------------+-----------+------+---------+------
++-----------------------------------------------------------------------------+-----------------------+
+| Id | User
+| Host
+| db | Command | Time | State
+| Info
+|
++----+-------------+-----------+------+---------+------
++-----------------------------------------------------------------------------+-----------------------+
+| 6 | system user |
+| NULL | Connect | 1743 | Waiting for master to send event
+| NULL
+|
+| 7 | system user |
+| NULL | Connect | 1743 | Slave has read all relay log; waiting for the slave I/O thread
+to update it | NULL
+|
+| 11 | root
+| localhost | NULL | Query | 0 | init
+| SHOW FULL
+PROCESSLIST |
++----+-------------+-----------+------+---------+------
++-----------------------------------------------------------------------------+-----------------------+
+3 rows in set (0.00 sec)
+
+verify status
+================
+master side:
+===============
+mysql> use jino;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> create table jjjj(id int not null auto_increment, primary key(id), username varchar(30) not null);
+Query OK, 0 rows affected (0.38 sec)
+
+mysql> insert into jjjj (username) values ('foo');
+Query OK, 1 row affected (0.10 sec)
+
+mysql> insert into jjjj (username) values ('bar');
+Query OK, 1 row affected (0.11 sec)
+
+
+
+mysql> use jino;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+Database changed
+mysql> show tables;+----------------+
+| Tables_in_jino |
++----------------+
+| users
+|
++----------------+
+1 row in set (0.00 sec)
