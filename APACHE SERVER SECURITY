@@ -64,3 +64,54 @@ Info sent to clients: Server: Apache/2.4.2 (Unix)
 systemctl restart httpd
 
 curl -I -H 'Accept-Encoding: gzip,deflate' http://localhost
+
+
+cent6
+======
+The module mod_deflate in Apache is installed but is not running:
+
+# apachectl -M |grep deflate
+ deflate_module (shared)
+Syntax OK
+
+If mod_deflate is active, there must be a line Content-Encoding: gzip in the output below:
+
+# curl -I -H 'Accept-Encoding: gzip,deflate' http://example.com/
+HTTP/1.1 200 OK
+Date: Fri, 25 Sep 2015 00:02:16 GMT
+Server: Apache
+X-Pingback: http://example.com/xmlrpc.php
+X-Powered-By: PleskLin
+Connection: close
+Content-Type: text/html; charset=UTF-8
+
+As the line is not presented, gzip compression is not active. How to activate it?
+Answer
+
+    Create the file /etc/httpd/conf.d/deflate.conf with the following content on Apache Service node:
+
+    <ifmodule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript
+        DeflateCompressionLevel 8
+    </ifmodule>
+
+    Reload web server on Apache Service node:
+
+    [root@pa115apachemysql1 ~]# /etc/init.d/httpd reload
+    Reloading httpd:
+
+    Check if compression is active:
+
+    # curl -I -H 'Accept-Encoding: gzip,deflate' http://example.com/
+    HTTP/1.1 200 OK
+    Date: Fri, 25 Sep 2015 00:04:26 GMT
+    Server: Apache
+    X-Pingback: http://example.com/xmlrpc.php
+    X-Powered-By: PleskLin
+    Vary: Accept-Encoding
+    Content-Encoding: gzip    <---- this line indicates that compression is active
+    Content-Length: 20
+    Connection: close
+    Content-Type: text/html; charset=UTF-8
+
+
