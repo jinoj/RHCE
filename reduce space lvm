@@ -1,0 +1,28 @@
+62  df -Th
+   63  umount /dev/mapper/VolGroup-lv_home
+   64  e2fsck -fy /dev/mapper/VolGroup-lv_home
+   65  resize2fs /dev/mapper/VolGroup-lv_home 200G
+   66  lvreduce /dev/mapper/VolGroup-lv_home -L 200G 
+   67  df -h
+   68  lvs
+   69  mount /dev/mapper/VolGroup-lv_home /home
+   70  df -h
+   71  cat /etc/fstab 
+   72  fdisk -l
+   73  pvs
+   74  vgs
+   75  lvs
+   76  lvcreate -L 500G VolGroup -n samba
+   77  lvs
+   78  mkdir /samba
+   79  mkfs.ext4 /dev/VolGroup/samba
+   80  mount /dev/VolGroup/samba /samba
+   81  df -h
+   82  mount -a
+   83  mount
+   84  vim /etc/fstab 
+   85  cp /etc/fstab /etc/fstab.backup
+   86  vim /etc/fstab 
+   87  blkid
+   88  vim /etc/fstab 
+   89  reboot
