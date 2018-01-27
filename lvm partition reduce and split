@@ -1,0 +1,24 @@
+   49  lsof
+   50  lsof | grep /dev/mapper/VolGroup-lv_home
+   51  cd
+   52  df -Th
+   53  umount /dev/mapper/VolGroup-lv_home
+   54  e2fsck -fy /dev/mapper/VolGroup-lv_home
+   55  resize2fs /dev/mapper/VolGroup-lv_home 200G
+   56  lvreduce /dev/mapper/VolGroup-lv_home -L 200G 
+   57  df -h
+   58  lvs
+   59  mount /dev/mapper/VolGroup-lv_home /home
+   60  df -h
+   61  cat /etc/fstab 
+   62  fdisk -l
+   63  pvs
+   64  vgs
+   65  lvs
+   66  lvcreate -L 500G VolGroup -n samba
+   67  lvs
+   68  mkdir /samba
+   69  mkfs.ext4 /dev/VolGroup/samba
+   70  mount /dev/VolGroup/samba /samba
+   71  df -h
+   72  mount -a
