@@ -35,3 +35,30 @@ stats auth admin:password123
 # service haproxy start
 # chkconfig haproxy on
 
+
+vi /etc/rsyslog.d/haproxy.conf
+
+$ModLoad imudp
+$UDPServerRun 514 
+$template Haproxy,"%msg%n"
+local0.=info -/var/log/haproxy.log;Haproxy
+local0.notice -/var/log/haproxy-status.log;Haproxy
+### keep logs in localhost ##
+local0.* ~ 
+
+/etc/init.d/haproxy restart
+
+cat /etc/logrotate.d/haproxy
+
+/var/log/haproxy.log {
+    missingok
+    notifempty
+    sharedscripts
+    rotate 120
+    daily
+    compress
+    postrotate
+        reload rsyslog >/dev/null 2>&1 || true
+    endscript
+}
+
