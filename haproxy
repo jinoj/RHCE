@@ -27,6 +27,7 @@ listen stats 192.168.2.102:31337
 mode http
 option httpclose
 balance roundrobin
+stats hide-version
 stats uri /admin?stats
 stats realm Haproxy\ Statistics
 stats refresh 5s
