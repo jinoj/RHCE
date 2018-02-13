@@ -27,10 +27,10 @@ listen stats 192.168.2.102:31337
 mode http
 option httpclose
 balance roundrobin
-stats uri /
+stats uri /admin?stats
 stats realm Haproxy\ Statistics
 stats refresh 5s
-stats auth admin:password123
+#stats auth admin:password123   #if want uncomment
 
 # service haproxy start
 # chkconfig haproxy on
