@@ -1,0 +1,28 @@
+vim /etc/vsftpd/vsftpd.conf
+
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+local_umask=022
+dirmessage_enable=YES
+xferlog_enable=YES
+xferlog_std_format=YES
+ascii_upload_enable=YES
+ascii_download_enable=YES
+ftpd_banner=Welcome to Radiant FTP service.
+listen=YES
+listen_ipv6=NO
+
+pam_service_name=vsftpd
+userlist_enable=YES
+tcp_wrappers=YES
+use_localtime=YES
+user_config_dir=/etc/vsftpd/users
+allow_writeable_chroot=YES
+
+
+vim /etc/vsftpd/users/keypass 
+local_root=/var/www/html/jino
+local_root=/var/www/html/webd
+
+systemc restart vsftpd
