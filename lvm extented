@@ -1,0 +1,50 @@
+[]# pvs
+  PV         VG       Fmt  Attr PSize   PFree  
+  /dev/drbd0 drbd-vg  lvm2 a--  115.25g  15.25g
+  /dev/sda2  VG00     lvm2 a--   70.00g  34.90g
+  /dev/sdb1  backupvg lvm2 a--    1.09t 617.25g
+# vgs
+  VG       #PV #LV #SN Attr   VSize   VFree  
+  VG00       1   6   0 wz--n-  70.00g  34.90g
+  backupvg   1   1   0 wz--n-   1.09t 617.25g
+  drbd-vg    1   3   0 wz--n- 115.25g  15.25g
+# lvs
+  LV           VG       Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  homeVol      VG00     -wi-ao----   4.00g                                                    
+  optVol       VG00     -wi-ao----   4.00g                                                    
+  rootVol      VG00     -wi-ao----   7.00g                                                    
+  swapVol      VG00     -wi-ao----   8.00g                                                    
+  usrVol       VG00     -wi-ao----   6.05g                                                    
+  varVol       VG00     -wi-ao----   6.05g                                                    
+  mysqlbackup  backupvg -wi-ao---- 500.00g                                                    
+  mysqlDataVol drbd-vg  -wi-ao----  50.00g                                                    
+  mysqlLogVol  drbd-vg  -wi-ao----  20.00g                                                    
+  webVol       drbd-vg  -wi-ao----  30.00g                                                    
+# cat /etc/fstab 
+
+#
+# /etc/fstab
+# Created by anaconda on Thu Feb 18 18:05:57 2016
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+/dev/mapper/VG00-rootVol /                       ext4    defaults        1 1
+UUID=d478534f-05b-417-89f1- /boot                   ext4    defaults        1 2
+/dev/mapper/VG00-homeVol /home                   ext4    defaults        1 2
+/dev/mapper/VG00-optVol /opt                    ext4    defaults        1 2
+/dev/mapper/VG00-usrVol /usr                    ext4    defaults        1 2
+/dev/mapper/VG00-varVol /var                    ext4    defaults        1 2
+/dev/mapper/VG00-swapVol swap                    swap    defaults        0 0
+tmpfs                   /dev/shm                tmpfs   defaults        0 0
+devpts                  /dev/pts                devpts  gid=5,mode=620  0 0
+sysfs                   /sys                    sysfs   defaults        0 0
+proc                    /proc                   proc    defaults        0 0
+/dev/backupvg/mysqlbackup /myi		xfs	defaults	1 2
+
+
+# lvextend -l +10G /dev/mapper/VG00-homeVol
+
+#resize2fs /dev/mapper/VG00-homeVol
+
+#df -h
