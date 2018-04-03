@@ -103,6 +103,7 @@ samba log in global section
 
 vim /etc/rsyslog.conf
 
-local7.*                        /var/log/samba/log.audit
+#local7.*                        /var/log/samba/log.audit
+local7.* /var/log/samba.log
 
 systemctl restart smb
