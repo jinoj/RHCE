@@ -87,3 +87,22 @@ add this permanent mount
 #df -h
 #smbclient //server/finance -U user2
 smb:\>mkdir fol1
+
+
+samba log in global section
+============================
+# --------------------------- Logging Options -----------------------------
+
+        vfs objects = full_audit
+        full_audit:prefix = %u|%I|%m|%S
+        full_audit:success = mkdir rename unlink rmdir pwrite
+        full_audit:failure = none
+        full_audit:facility = local7
+        full_audit:priority = NOTICE
+
+
+vim /etc/rsyslog.conf
+
+local7.*                        /var/log/samba/log.audit
+
+systemctl restart smb
