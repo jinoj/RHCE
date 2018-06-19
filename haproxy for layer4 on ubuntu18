@@ -1,0 +1,31 @@
+
+
+global
+    log         127.0.0.1 local2 info
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     256
+    user        haproxy
+    group       haproxy
+    daemon
+
+defaults
+
+      # set "mode tcp" for Layer4
+
+    mode               tcp
+    log                global
+    timeout connect    10s
+    timeout client     30s
+    timeout server     30s
+
+# define frontend and backend servers
+
+frontend  mysql-in
+    bind *:3306
+    default_backend    backend_servers
+
+backend backend_servers
+    balance            roundrobin
+    server             db01 192.168.5.207:3306 check
+    server             db02 192.168.5.100:3306 check
