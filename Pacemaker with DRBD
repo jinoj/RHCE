@@ -1,0 +1,258 @@
+# yum install -y pacemaker pcs psmisc policycoreutils-python
+
+# firewall-cmd --permanent --add-service=high-availability
+success
+# firewall-cmd --reload
+success
+
+# setenforce 0
+# sed -i.bak "s/SELINUX=enforcing/SELINUX=permissive/g" /etc/selinux/
+# systemctl mask firewalld.service
+# systemctl stop firewalld.service
+# iptables --flush
+
+# systemctl start pcsd.service
+# systemctl enable pcsd.service
+ln -s '/usr/lib/systemd/system/pcsd.service' '/etc/systemd/system/multi-user.target.wants/
+pcsd.service'
+
+# passwd hacluster
+Changing password for user hacluster.
+New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.
+
+
+Any one node
+
+[root@pcmk-1 ~]# pcs cluster auth pcmk-1 pcmk-2
+[root@pcmk-1 ~]#pcs cluster setup --name mycluster pcmk-1 pcmk-2
+[root@pcmk-1 ~]# pcs cluster start --all
+
+pcs property set stonith-enabled=false
+pcs resource defaults resource-stickiness=100
+
+
+Prevent Resources from Moving after Recovery
+==============================================
+[root@pcmk-1 ~]# pcs resource defaults resource-stickiness=100
+[root@pcmk-1 ~]# pcs resource defaults
+resource-stickiness: 100
+
+
+
+# rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+# rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+
+# yum install -y kmod-drbd84 drbd84-utils
+
+[root@pcmk-1 ~]# firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source
+address="192.168.122.102" port port="7789" protocol="tcp" accept'
+success
+[root@pcmk-1 ~]# firewall-cmd --reload
+success
+
+[root@pcmk-2 ~]# firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source
+address="192.168.122.101" port port="7789" protocol="tcp" accept'
+success
+[root@pcmk-2 ~]# firewall-cmd --reload
+success
+
+[root@pcmk-1 ~]# lvcreate --name drbd-demo --size 1G centos_pcmk-1
+Logical volume "drbd-demo" created
+[root@pcmk-1 ~]# lvs
+
+[root@pcmk-1 ~]# ssh pcmk-2 -- lvcreate --name drbd-demo --size 1G centos_pcmk-2
+Logical volume "drbd-demo" created
+
+
+so simply run this on both nodes to use this sample configuration
+==================================================================
+
+# cat <<END >/etc/drbd.d/wwwdata.res
+resource wwwdata {
+protocol C;
+meta-disk internal;
+device /dev/drbd1;
+syncer {
+verify-alg sha1;
+}
+net {
+allow-two-primaries;
+}
+on pcmk-1 {
+disk
+/dev/centos_pcmk-1/drbd-demo;
+address 192.168.122.101:7789;
+}
+on pcmk-2 {
+disk
+/dev/centos_pcmk-2/drbd-demo;
+address 192.168.122.102:7789;
+}
+}
+
+[root@pcmk-1 ~]# drbdadm create-md wwwdata
+initializing activity log
+NOT initializing bitmap
+Writing meta data...
+New drbd meta data block successfully created.
+[root@pcmk-1 ~]# modprobe drbd
+[root@pcmk-1 ~]# drbdadm up wwwdata
+
+[root@pcmk-1 ~]# cat /proc/drbd
+version: 8.4.6 (api:1/proto:86-101)
+GIT-hash: 833d830e0152d1e457fa7856e71e11248ccf3f70 build by phil@Build64R7, 2015-04-10
+05:13:52
+1: cs:WFConnection ro:Secondary/Unknown ds:Inconsistent/DUnknown C r----s
+ns:0 nr:0 dw:0 dr:0 al:0 bm:0 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:1048508
+
+[root@pcmk-2 ~]# cat /proc/drbd
+version: 8.4.6 (api:1/proto:86-101)
+GIT-hash: 833d830e0152d1e457fa7856e71e11248ccf3f70 build by phil@Build64R7, 2015-04-10
+05:13:52
+1: cs:Connected ro:Secondary/Secondary ds:Inconsistent/Inconsistent C r-----
+ns:0 nr:0 dw:0 dr:0 al:0 bm:0 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:1048508
+
+[root@pcmk-1 ~]# drbdadm primary --force wwwdata
+
+[root@pcmk-1 ~]# cat /proc/drbd
+version: 8.4.6 (api:1/proto:86-101)
+GIT-hash: 833d830e0152d1e457fa7856e71e11248ccf3f70 build by phil@Build64R7, 2015-04-10
+05:13:52
+1: cs:SyncSource ro:Primary/Secondary ds:UpToDate/Inconsistent C r-----
+ns:2872 nr:0 dw:0 dr:3784 al:0 bm:0 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:1045636
+[>....................] sync'ed: 0.4% (1045636/1048508)K
+finish: 0:10:53 speed: 1,436 (1,436) K/sec
+
+[root@pcmk-1 ~]# cat /proc/drbd
+version: 8.4.6 (api:1/proto:86-101)
+GIT-hash: 833d830e0152d1e457fa7856e71e11248ccf3f70 build by phil@Build64R7, 2015-04-10
+05:13:52
+1: cs:Connected ro:Primary/Secondary ds:UpToDate/UpToDate C r-----
+ns:1048508 nr:0 dw:0 dr:1049420 al:0 bm:0 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:0
+
+[root@pcmk-1 ~]# mkfs.xfs /dev/drbd1
+
+[root@pcmk-1 ~]# pcs -f drbd_cfg resource create WebData ocf:linbit:drbd \
+drbd_resource=wwwdata op monitor interval=60s
+[root@pcmk-1 ~]# pcs -f drbd_cfg resource master WebDataClone WebData \
+master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 \
+notify=true
+[root@pcmk-1 ~]# pcs -f drbd_cfg resource show
+ClusterIP
+(ocf::heartbeat:IPaddr2):
+Started
+WebSite
+(ocf::heartbeat:apache):
+Started
+Master/Slave Set: WebDataClone [WebData]
+Stopped: [ pcmk-1 pcmk-2 ]
+
+[root@pcmk-1 ~]# pcs cluster cib-push drbd_cfg
+CIB updated
+
+[root@pcmk-1 ~]# pcs cluster cib-push drbd_cfg
+CIB updated
+
+[root@pcmk-1 ~]# pcs cluster cib fs_cfg
+[root@pcmk-1 ~]# pcs -f fs_cfg resource create WebFS Filesystem \
+device="/dev/drbd1" directory="/var/www/html" fstype="xfs"
+[root@pcmk-1 ~]# pcs -f fs_cfg constraint colocation add WebFS with WebDataClone INFINITY
+with-rsc-role=Master
+[root@pcmk-1 ~]# pcs -f fs_cfg constraint order promote WebDataClone then start WebFS
+Adding WebDataClone WebFS (kind: Mandatory) (Options: first-action=promote then-action=start)
+
+
+[root@pcmk-1 ~]# pcs -f fs_cfg constraint colocation add WebSite with WebFS INFINITY
+[root@pcmk-1 ~]# pcs -f fs_cfg constraint order WebFS then WebSite
+Adding WebFS WebSite (kind: Mandatory) (Options: first-action=start then-action=start)
+
+[root@pcmk-1 ~]# pcs -f fs_cfg constraint
+Location Constraints:
+Ordering Constraints:
+start ClusterIP then start WebSite (kind:Mandatory)
+promote WebDataClone then start WebFS (kind:Mandatory)
+start WebFS then start WebSite (kind:Mandatory)
+Colocation Constraints:
+WebSite with ClusterIP (score:INFINITY)
+WebFS with WebDataClone (score:INFINITY) (with-rsc-role:Master)
+WebSite with WebFS (score:INFINITY)
+
+[root@pcmk-1 ~]# pcs -f fs_cfg resource show
+ClusterIP
+(ocf::heartbeat:IPaddr2):
+Started
+WebSite
+(ocf::heartbeat:apache):
+Started
+Master/Slave Set: WebDataClone [WebData]
+Masters: [ pcmk-1 ]
+Slaves: [ pcmk-2 ]
+WebFS (ocf::heartbeat:Filesystem):
+Stopped
+
+[root@pcmk-1 ~]# pcs cluster cib-push fs_cfg
+[root@pcmk-1 ~]# pcs status
+Last updated: Fri Aug 14 09:34:11 2015
+Last change: Fri Aug 14 09:34:09 2015
+Stack: corosync
+Current DC: pcmk-1 (1) - partition with quorum
+Version: 1.1.12-a14efad
+2 Nodes configured
+
+
+
+root@pcmk-1 ~]# mount /dev/drbd1 /mnt
+[root@pcmk-1 ~]# cat <<-END >/mnt/index.html
+<html>
+<body>My Test Site - DRBD</body>
+</html>
+END
+[root@pcmk-1 ~]# chcon -R --reference=/var/www/html /mnt
+[root@pcmk-1 ~]# umount /dev/drbd1
+
+# vgcreate my_vg /dev/sdb1
+  Volume group "my_vg" successfully created
+
+# lvcreate -L450 -n my_lv my_vg
+  Rounding up size to full physical extent 452.00 MiB
+  Logical volume "my_lv" created
+
+
+# mkfs.ext4 /dev/my_vg/my_lv
+
+
+[root@z1 ~]# pcs resource create my_lvm LVM volgrpname=my_vg exclusive=true
+# pcs resource show
+     my_lvm	(ocf::heartbeat:LVM):	Started
+
+[root@z1 ~]# pcs resource create my_fs Filesystem device="/dev/my_vg/my_lv" directory="/var/www" fstype="ext4" 
+
+[root@z1 ~]# pcs resource create VirtualIP IPaddr2 ip=198.51.100.3 
+cidr_netmask=24 
+
+[root@z1 ~]# pcs resource create Website apache configfile="/etc/httpd/conf/httpd.conf" statusurl="http://127.0.0.1/server-status" 
+
+[root@z1 ~]# pcs status
+Cluster name: my_cluster
+Last updated: Wed Jul 31 16:38:51 2013
+Last change: Wed Jul 31 16:42:14 2013 via crm_attribute on z1.example.com
+Stack: corosync
+Current DC: z2.example.com (2) - partition with quorum
+Version: 1.1.10-5.el7-9abe687
+2 Nodes configured
+6 Resources configured
+
+
+Online: [ z1.example.com z2.example.com ]
+
+Full list of resources:
+ myapc	(stonith:fence_apc_snmp):	Started z1.example.com 
+ Resource Group: apachegroup
+     my_lvm	(ocf::heartbeat:LVM):	Started z1.example.com 
+     my_fs	(ocf::heartbeat:Filesystem):	Started z1.example.com 
+     VirtualIP	(ocf::heartbeat:IPaddr2):	Started z1.example.com 
+     Website	(ocf::heartbeat:apache):	Started z1.example.com
+
+
