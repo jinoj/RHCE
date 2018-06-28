@@ -63,3 +63,22 @@ cat /etc/logrotate.d/haproxy
     endscript
 }
 
+
+frontend LB
+    bind :80 v4v6
+    mode http
+    redirect scheme https if !{ ssl_fc }
+
+frontend LBS
+    bind :443 v4v6
+    option tcplog
+    mode tcp
+    default_backend LBB
+
+backend LBB
+    mode tcp
+    balance roundrobin
+    option ssl-hello-chk
+    server srv1 server1.example.com:443 check
+    server srv2 server2.example.com:443 check backup
+
