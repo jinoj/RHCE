@@ -105,6 +105,7 @@ NODE ONE:
      pcs resource create webfsone Filesystem device="/dev/drbd-vg/drbd-jj" directory="/jino1" fstype="xfs"
      pcs resource create webfstwo Filesystem device="/dev/drbd-vg/drbd-jjj" directory="/jino2" fstype="xfs"
      pcs resource create virtualip ocf:heartbeat:IPaddr2 ip=192.168.122.100 cidr_netmask=24 nic=etho
+     pcs resource create webserver ocf:heartbeat:apache configfile=/etc/httpd/conf/httpd.conf statusurl="http://localhost/server-status"
      pcs resource group add jinogroup virtualip lvm webfsone webfstwo  webserver
      pcs constraint order promote drbd_clusterdb_clone then start jinogroup INFINITY
      pcs constraint colocation add jinogroup  with master drbd_clusterdb_clone INFINITY
