@@ -1,0 +1,75 @@
+BOTH NODE:
+==========
+     yum update -y
+     yum install -y pacemaker pcs psmisc policycoreutils-python
+     rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+     rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+     yum install -y kmod-drbd84 drbd84-utils
+     setenforce 0
+     systemctl stop firewalld
+     systemctl disable firewalld
+     modprobe drbd
+     vim /etc/drbd.d/clusterdb.res
+     
+resource clusterdb {
+  protocol C;
+  handlers {
+    pri-on-incon-degr "/usr/lib/drbd/notify-pri-on-incon-degr.sh; /usr/lib/drbd/notifyemergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
+    pri-lost-after-sb "/usr/lib/drbd/notify-pri-lost-after-sb.sh; /usr/lib/drbd/notifyemergency-reboot.sh; echo b > /proc/sysrq-trigger; reboot -f";
+    local-io-error "/usr/lib/drbd/notify-io-error.sh; /usr/lib/drbd/notify-emergencyshutdown.sh; echo o > /proc/sysrq-trigger ; halt -f";
+    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
+  }
+  startup {
+    degr-wfc-timeout 120; # 2 minutes.
+    outdated-wfc-timeout 2; # 2 seconds.
+  }
+  disk {
+    on-io-error detach;
+  }
+  net {
+   cram-hmac-alg "sha1";
+   shared-secret "clusterdb";
+   after-sb-0pri disconnect;
+   after-sb-1pri disconnect;
+   after-sb-2pri disconnect;
+   rr-conflict disconnect;
+
+  }
+  syncer {
+   rate 150M;
+   al-extents 257;
+   on-no-data-accessible io-error;
+  }
+  on node1 {
+    device /dev/drbd0;
+    disk /dev/vdb1;
+    address 192.168.122.109:7788;
+    flexible-meta-disk internal;
+  }
+ on node2 {
+    device /dev/drbd0;
+    disk /dev/vdb1;
+    address 192.168.122.45:7788;
+    meta-disk internal;
+  }
+  }
+     
+     drbdadm create-md clusterdb 
+     drbdadm up clusterdb 
+     systemctl start drbd
+     systemctl enable drbd
+     
+node1# drbdadm primary --force clusterdb
+
+     systemctl start pcsd.service
+     systemctl enable pcsd.service
+     passwd hacluster
+
+NODE ONE:
+=========
+     pcs cluster auth node1 node2
+     pcs cluster setup --name mycluster node2 node3  
+     pcs cluster start --all
+     pcs cluster enable --all
+     pcs property set stonith-enabled=false
+     pcs property set no-quorum-policy=ignore
