@@ -94,7 +94,8 @@ NODE ONE:
    lvcreate --name drbd-jj --size 2G drbd-vg
    lvcreate --name drbd-jjj --size 2G drbd-vg
    vgchange -ay drbd-vg   (active Volume group)
-   vgchange -an drbd-vg   (Deactive Volume group)
+   
+(optional): vgchange -an drbd-vg   (Deactive Volume group)
 
      pcs cluster auth node1 node2 -u hacluster -p .
      pcs cluster setup --name mycluster node2 node3  
