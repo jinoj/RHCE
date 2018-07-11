@@ -58,7 +58,18 @@ resource clusterdb {
      drbdadm up clusterdb 
      systemctl start drbd
      systemctl enable drbd
-     
+   vim /etc/lvm/lvm.conf
+   
+   add:  filter = [ "r|/dev/vdb1|", "r|/dev/disk/*|", "r|/dev/block/*|", "a|.*|" ]
+   edit: write_cache_state = 1 to write_cache_state = 0
+   edit:   use_lvmetad = 1 to  use_lvmetad = 0
+   
+   lvmconf --enable-halvm --services --startstopservices
+   dracut -H -f /boot/initramfs-$(uname -r).img $(uname -r)
+   reboot
+   
+  #cat /proc/drbd
+  
 node1# drbdadm primary --force clusterdb
 
      systemctl start pcsd.service
@@ -67,6 +78,13 @@ node1# drbdadm primary --force clusterdb
 
 NODE ONE:
 =========
+   pvcreate /dev/drbd0
+   vgcreate drbd-vg /dev/drbd0
+   lvcreate --name drbd-jj --size 2G drbd-vg
+   lvcreate --name drbd-jjj --size 2G drbd-vg
+   vgchange -ay drbd-vg   (active Volume group)
+   vgchange -an drbd-vg   (Deactive Volume group)
+
      pcs cluster auth node1 node2
      pcs cluster setup --name mycluster node2 node3  
      pcs cluster start --all
