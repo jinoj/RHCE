@@ -7,6 +7,13 @@ BOTH NODE:
      rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
      yum install -y kmod-drbd84 drbd84-utils
      yum install httpd mariadb mariadb-server php
+ 
+     # vim /etc/httpd/conf.d/status.conf
+     <Location /server-status>
+     SetHandler server-status
+     Require local
+     </Location>
+
      setenforce 0
      systemctl stop firewalld
      systemctl disable firewalld
