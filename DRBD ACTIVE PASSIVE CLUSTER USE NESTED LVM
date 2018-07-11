@@ -1,5 +1,6 @@
 BOTH NODE:
 ==========
+     DISK: /dev/cdb -> n-p-1-enter-enter-p-w-partprobe---> after Disk vdb1 created.check it lsblk
      yum update -y
      yum install -y pacemaker pcs psmisc policycoreutils-python
      rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
