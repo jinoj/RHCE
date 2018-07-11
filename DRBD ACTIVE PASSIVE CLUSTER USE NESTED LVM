@@ -58,6 +58,8 @@ resource clusterdb {
      drbdadm up clusterdb 
      systemctl start drbd
      systemctl enable drbd
+     mkdir /jin1
+     mkdir /jino2
    vim /etc/lvm/lvm.conf
    
    add:  filter = [ "r|/dev/vdb1|", "r|/dev/disk/*|", "r|/dev/block/*|", "a|.*|" ]
@@ -91,3 +93,31 @@ NODE ONE:
      pcs cluster enable --all
      pcs property set stonith-enabled=false
      pcs property set no-quorum-policy=ignore
+     
+     
+     pcs cluster cib drbd_cfg
+     pcs -f drbd_cfg resource create drbd_clusterdb ocf:linbit:drbd drbd_resource=clusterdb
+     pcs -f drbd_cfg resource master drbd_clusterdb_clone drbd_clusterdb master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
+     pcs cluster cib-push drbd_cfg
+     pcs resource create lvm ocf:heartbeat:LVM volgrpname=drbd-vg
+     pcs resource create webfsone Filesystem device="/dev/drbd-vg/drbd-jj" directory="/jino1" fstype="xfs"
+     pcs resource create webfstwo Filesystem device="/dev/drbd-vg/drbd-jjj" directory="/jino2" fstype="xfs"
+     pcs resource create virtualip ocf:heartbeat:IPaddr2 ip=192.168.122.100 cidr_netmask=24 nic=etho
+     pcs resource group add jinogroup virtualip lvm webfsone webfstwo  webserver
+     pcs constraint order promote drbd_clusterdb_clone then start jinogroup INFINITY
+     pcs constraint colocation add jinogroup  with master drbd_clusterdb_clone INFINITY
+     pcs resource create dbserver ocf:heartbeat:mysql config="/jino2/my.cnf" datadir="/jino2/data" pid="/var/lib/mysql/mysql.pid" socket="/var/lib/mysql/mysql.sock" user="mysql" group="mysql" additional_parameters="--user=mysql" --group jinogroup
+
+     #mv /etc/my.cnf /jino2/my.cnf
+     #mkdir -p /jino2/data
+     #vim /jino2/my.cnf
+      datadir=/jino2/data
+      bind-address=192.168.122.100
+(or)
+      bind-address=0.0.0.0
+     #mysql_install_db --no-defaults --datadir=/jino2/data
+     chown -R mysql:mysql /jino2/
+     mysql –h 192.168.0.4 –u root –p
+     GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'MyDBpassword';
+     FLUSH PRIVILEGES;
+     CREATE DATABASE cluster_db;
