@@ -119,6 +119,7 @@ NODE ONE:
      pcs resource group add jinogroup virtualip lvm webfsone webfstwo  webserver
      pcs constraint order promote drbd_clusterdb_clone then start jinogroup INFINITY
      pcs constraint colocation add jinogroup  with master drbd_clusterdb_clone INFINITY
+     pcs resource create ftpserver systemd:vsftpd --group jinogroup
 
      #mv /etc/my.cnf /jino2/my.cnf
      #mkdir -p /jino2/data
