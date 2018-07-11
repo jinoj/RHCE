@@ -8,7 +8,7 @@ BOTH NODE:
      yum install -y kmod-drbd84 drbd84-utils
      yum install httpd mariadb mariadb-server php
  
-     # vim /etc/httpd/conf.d/status.conf
+# vim /etc/httpd/conf.d/status.conf
      <Location /server-status>
      SetHandler server-status
      Require local
@@ -18,7 +18,8 @@ BOTH NODE:
      systemctl stop firewalld
      systemctl disable firewalld
      modprobe drbd
-     vim /etc/drbd.d/clusterdb.res
+
+vim /etc/drbd.d/clusterdb.res
      
 resource clusterdb {
   protocol C;
@@ -69,7 +70,8 @@ resource clusterdb {
      systemctl enable drbd
      mkdir /jin1
      mkdir /jino2
-   vim /etc/lvm/lvm.conf
+   
+vim /etc/lvm/lvm.conf
    
    add:  filter = [ "r|/dev/vdb1|", "r|/dev/disk/*|", "r|/dev/block/*|", "a|.*|" ]
    edit: write_cache_state = 1 to write_cache_state = 0
