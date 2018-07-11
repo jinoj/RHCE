@@ -134,3 +134,7 @@ NODE ONE:
      GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'MyDBpassword';
      FLUSH PRIVILEGES;
      CREATE DATABASE cluster_db;
+     
+     
+     refer:
+     http://isardvdi-the-docs-repo.readthedocs.io/en/latest/setups/ha/active_passive/
