@@ -119,7 +119,6 @@ NODE ONE:
      pcs resource group add jinogroup virtualip lvm webfsone webfstwo  webserver
      pcs constraint order promote drbd_clusterdb_clone then start jinogroup INFINITY
      pcs constraint colocation add jinogroup  with master drbd_clusterdb_clone INFINITY
-     pcs resource create dbserver ocf:heartbeat:mysql config="/jino2/my.cnf" datadir="/jino2/data" pid="/var/lib/mysql/mysql.pid" socket="/var/lib/mysql/mysql.sock" user="mysql" group="mysql" additional_parameters="--user=mysql" --group jinogroup
 
      #mv /etc/my.cnf /jino2/my.cnf
      #mkdir -p /jino2/data
@@ -130,6 +129,7 @@ NODE ONE:
       bind-address=0.0.0.0
      #mysql_install_db --no-defaults --datadir=/jino2/data
      chown -R mysql:mysql /jino2/
+     pcs resource create dbserver ocf:heartbeat:mysql config="/jino2/my.cnf" datadir="/jino2/data" pid="/var/lib/mysql/mysql.pid" socket="/var/lib/mysql/mysql.sock" user="mysql" group="mysql" additional_parameters="--user=mysql" --group jinogroup
      mysql –h 192.168.0.4 –u root –p
      GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'MyDBpassword';
      FLUSH PRIVILEGES;
