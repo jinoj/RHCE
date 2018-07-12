@@ -197,3 +197,5 @@ net {
   after-sb-1pri discard-secondary;
   after-sb-2pri disconnect;
 }
+===================================================================
+https://zeldor.biz/2011/07/drbd-masterslave-setup/
