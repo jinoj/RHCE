@@ -47,7 +47,7 @@ resource clusterdb {
   }
   syncer {
    rate 150M;
-   al-extents 257;
+   al-extents 257; #Also Linbit told me so personally. The recommended range for this should be between 7 and 3833. The default value is 127
    on-no-data-accessible io-error;
   }
   on node1 {
