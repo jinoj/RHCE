@@ -96,7 +96,7 @@ NODE ONE:
    vgcreate drbd-vg /dev/drbd0
    lvcreate --name drbd-jj --size 2G drbd-vg
    lvcreate --name drbd-jjj --size 2G drbd-vg
-   vgchange -ay drbd-vg   (active Volume group)
+(optional): vgchange -ay drbd-vg   (active Volume group)
    
 (optional): vgchange -an drbd-vg   (Deactive Volume group)
 
@@ -125,11 +125,11 @@ NODE ONE:
      #mv /etc/my.cnf /jino2/my.cnf
      #mkdir -p /jino2/data
      #vim /jino2/my.cnf
-      datadir=/jino2/data
-      bind-address=192.168.122.100
+     datadir=/jino2/data
+     bind-address=192.168.122.100
 (or)
-      bind-address=0.0.0.0
-     #mysql_install_db --no-defaults --datadir=/jino2/data
+     bind-address=0.0.0.0
+     mysql_install_db --no-defaults --datadir=/jino2/data
      chown -R mysql:mysql /jino2/
      pcs resource create dbserver ocf:heartbeat:mysql config="/jino2/my.cnf" datadir="/jino2/data" pid="/var/lib/mysql/mysql.pid" socket="/var/lib/mysql/mysql.sock" user="mysql" group="mysql" additional_parameters="--user=mysql" --group jinogroup
      mysql –h 192.168.0.4 –u root –p
