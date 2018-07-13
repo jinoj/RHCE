@@ -68,6 +68,7 @@ resource clusterdb {
      drbdadm up clusterdb 
      systemctl start drbd
      systemctl enable drbd
+     drbdadm -- --overwrite-data-of-peer primary clusterdb
      mkdir /jin1
      mkdir /jino2
    
