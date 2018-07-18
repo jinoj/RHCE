@@ -1,0 +1,69 @@
+resource clusterdb {
+  protocol C;
+  handlers {
+    pri-on-incon-degr "/usr/lib/drbd/notify-pri-on-incon-degr.sh; /usr/lib/drbd/notifyemergency-reboot.sh; echo b > /proc/sysrq-trigger ; reboot -f";
+    pri-lost-after-sb "/usr/lib/drbd/notify-pri-lost-after-sb.sh; /usr/lib/drbd/notifyemergency-reboot.sh; echo b > /proc/sysrq-trigger; reboot -f";
+    local-io-error "/usr/lib/drbd/notify-io-error.sh; /usr/lib/drbd/notify-emergencyshutdown.sh; echo o > /proc/sysrq-trigger ; halt -f";
+    fence-peer "/usr/lib/drbd/crm-fence-peer.sh";
+  }
+  startup {
+    degr-wfc-timeout 120;
+    outdated-wfc-timeout 2; 
+  }
+  disk {
+    on-io-error detach;
+  }
+  net {
+   cram-hmac-alg "sha1";
+   shared-secret "clusterdb";
+   after-sb-0pri disconnect;
+   after-sb-1pri disconnect;
+   after-sb-2pri disconnect;
+   rr-conflict disconnect;
+
+  }
+  syncer {
+   rate 150M;
+   al-extents 257;
+   on-no-data-accessible io-error;
+  }
+  on node1 {
+    device /dev/drbd0;
+    disk /dev/vdb1;
+    address 192.168.122.110:7788;
+    flexible-meta-disk internal;
+  }
+ on node2 {
+    device /dev/drbd0;
+    disk /dev/vdb1;
+    address 192.168.122.107:7788;
+    meta-disk internal;
+  }
+}
+
+
+resource clusterdb1 {
+
+  protocol A;
+
+  stacked-on-top-of clusterdb {
+    device    /dev/drbd10;
+    address   192.168.122.100:7788;
+  }
+
+  on node3 {
+    device    /dev/drbd10;
+    disk      /dev/vdb1;
+    address   192.168.122.216:7788;
+    meta-disk internal;
+}
+}
+http://linux.alanstudio.hk/drbd_3node_ha.htm
+drbdadm --stacked adjust clusterdb1 
+ drbdadm --stacked  primary clusterdb1
+  }
+
+}
+
+
+filter = [ "r|/dev/vdb1|", "a|drbd1|", "r|/dev/disk/*|", "r|/dev/block/*|", "r|.*|" ]
