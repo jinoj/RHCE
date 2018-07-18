@@ -67,3 +67,44 @@ drbdadm --stacked adjust clusterdb1
 
 
 filter = [ "r|/dev/vdb1|", "a|drbd1|", "r|/dev/disk/*|", "r|/dev/block/*|", "r|.*|" ]
+
+ [root@server1,2]# drbdadm create-md drbd0
+[root@server1,2]# /etc/init.d/drbd start
+[root@server1]# drbdadm -- --overwrite-data-of-peer primary drbd0
+[root@server1]# cat /proc/drbd
+To build up the lower DRBD (res: drbd0) connection between server1(primary) & server2(secondary), After type "cat/proc/drbd" , you will see:
+
+0: cs:SyncSource ro:Primary/Secondary ds:UpToDate/Inconsistent C r---
+[==>.................] sync'ed: 15.9% (16057/19073)M
+
+[root@server1]# drbdadm --stacked create-md drbd10
+[root@server-dr]# drbdadm create-md drbd10
+[root@server1]# drbdadm --stacked adjust drbd10
+[root@server-dr]# drbdadm adjust drbd10
+[root@server1]# drbdadm --stacked -- --overwrite-data-of-peer primary drbd10
+[root@server1]# cat /proc/drbd
+To build up the upper DRBD (res: drbd10) connection between server1(primary) & server-dr(secondary), After type "cat/proc/drbd" , you will see:
+
+0: cs:Connected ro:Primary/Secondary ds:UpToDate/UpToDate C r---
+1: cs:SyncSource ro:Primary/Secondary ds:UpToDate/Inconsistent A r---
+[=============>......] sync'ed: 74.4% (4900/19072)
+
+[root@server1]# mkfs.ext3 drbd10
+[root@server1]# mount /dev/drbd10 /home
+[root@server1]# df -h
+[root@server1]# umount /home
+After it is synced, we will use the upper DRBD (drbd10) as our mounting point! But we need format it as ext3 filesystem first. Try mount it and test.
+
+[root@server1,2]# vi /etc/ha.d/haresources
+server01 IPaddr::192.168.1.10/24/eth0 drbdupper::drbd10 Filesystem::/dev/drbd10::/home::ext3
+Revise haresource of server1,2 which we use "drbdupper" to serve.
+
+[root@server2]# /etc/init.d/heartbeat stop
+[root@server1]# /etc/init.d/heartbeat stop
+[root@server1]# /etc/init.d/heartbeat start
+[root@server2]# /etc/init.d/heartbeat start
+Restart heartbeat to reload configure
+
+[root@server1]# cat /proc/drbd
+[root@server1]# df -h
+[root@server1]# ifconfig |grep -b1 eth0:0
