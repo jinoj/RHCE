@@ -203,4 +203,14 @@ https://zeldor.biz/2011/07/drbd-masterslave-setup/
 https://www.zenoss.com/sites/default/files/zenoss-doc/7801/book/install/ha/maps/config-master.html
 
 
+# cat <<-END >/jino1/crm_logger.sh
+#!/bin/sh
+logger -t "ClusterMon-External" "${CRM_notify_node} ${CRM_notify_rsc} \
+${CRM_notify_task} ${CRM_notify_desc} ${CRM_notify_rc} \
+${CRM_notify_target_rc} ${CRM_notify_status} ${CRM_notify_recipient}";
+exit;
+END
+
+chmod 755 /jino1/crm_logger.sh
+
 pcs resource create ClusterMon-External ClusterMon user=root update=10 extra_options="-E /usr/local/bin/crm_logger.sh --watch-fencing" htmlfile=/jino1/cluster_mon.html pidfile=/var/run/crm_mon-external.pid clone
