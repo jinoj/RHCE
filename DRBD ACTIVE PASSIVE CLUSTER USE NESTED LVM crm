@@ -22,3 +22,39 @@ order o_drbd_r0_before_r0-U  inf: ms_drbd_r0:promote ms_drbd_r0-U:start
 vim /etc/lvm/lvm.conf
 
  filter = [  "a|drbd1[0-9]|", "r|.*|" ]
+
+vi /etc/drbd.d/r0.res
+
+resource r0 {
+  protocol C;
+
+  on node1 {
+    device     /dev/drbd0;
+    disk       /dev/vdb1;
+    address    192.168.122.93:7788;
+    meta-disk internal;
+  }
+
+  on node2 {
+    device    /dev/drbd0;
+    disk      /dev/vdb1;
+    address   192.168.122.137:7788;
+    meta-disk internal;
+  }
+}
+
+resource r0-U {
+  protocol A;
+
+  stacked-on-top-of r0 {
+    device     /dev/drbd10;
+    address    192.168.122.100:7788;
+  }
+
+  on node3 {
+    device     /dev/drbd10;
+    disk       /dev/vdb1;
+    address    192.168.122.110:7788; # Public IP of the backup node
+    meta-disk  internal;
+  }
+}
