@@ -1,0 +1,9 @@
+ Use an external disk for your metadata. This might help, at the cost of maintenance ease.
+
+Tune your network connection, by changing the receive and send buffer settings via sysctl.
+
+Change the max-buffers, max-epoch-size or both in the DRBD configuration.
+
+Increase the al-extents value, depending on your IO patterns.
+
+If you have a hardware RAID controller with a BBU (Battery Backup Unit), you might benefit from setting no-disk-flushes, no-disk-barrier and/or no-md-flushes. 
