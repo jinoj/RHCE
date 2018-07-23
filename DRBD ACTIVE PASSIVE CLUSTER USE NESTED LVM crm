@@ -7,7 +7,24 @@ gpgkey=http://download.opensuse.org/repositories/network:/ha-clustering:/Stable/
 enabled=1
 
 
+To enable a stacked resource, you first enable its lower-level resource and promote it:
 
+drbdadm up r0
+drbdadm primary r0
+
+As with unstacked resources, you must create DRBD meta data on the stacked resources. This is done using the following command:
+
+drbdadm --stacked create-md r0-U
+
+Then, you may enable the stacked resource:
+
+drbdadm --stacked up r0-U
+drbdadm --stacked primary r0-U
+
+After this, you may bring up the resource on the backup node, enabling three-node replication:
+
+drbdadm create-md r0-U
+drbdadm up r0-U
 
 
 
