@@ -17,6 +17,9 @@ BOTH NODE:
      setenforce 0
      systemctl stop firewalld
      systemctl disable firewalld
+     
+     firewall-cmd --permanent  --add-rich-rule='rule family=ipv4 source address=192.168.122.0/24 accept' 
+     firewall-cmd --reload
      modprobe drbd
 
 vim /etc/drbd.d/clusterdb.res
